@@ -1,0 +1,12 @@
+{
+  "name": "openplatform",
+  "version": "1.0.0",
+  "description": "Skills for building, publishing and hosting FinamX Open Platform extensions: guided path from an empty folder to a reviewed widget, artifact upload, moderation troubleshooting, host embedding and agent-driven UI.",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "FinamX Open Platform",
+    "shortDescription": "Build, publish and host FinamX Open Platform extensions",
+    "developerName": "FinamX Open Platform",
+    "category": "Developer Tools"
+  }
+}

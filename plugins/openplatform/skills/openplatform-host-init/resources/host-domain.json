@@ -1,0 +1,25 @@
+{
+  "topics": [
+    {
+      "topicType": "fdc3.instrument",
+      "schema": {
+        "type": "object",
+        "required": ["type", "id"],
+        "properties": {
+          "type": { "const": "fdc3.instrument" },
+          "id": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
+    }
+  ],
+  "methods": [
+    { "method": "market.quote", "requiredScope": "market.read" },
+    { "method": "user.profile.read", "requiredScope": "user.profile.read" }
+  ],
+  "consentMatrix": [
+    { "topicType": "fdc3.instrument", "access": "public" }
+  ]
+}

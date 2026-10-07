@@ -1,0 +1,15 @@
+{
+  "name": "finamx-openplatform",
+  "description": "FinamX Open Platform skills for coding agents",
+  "owner": { "name": "FinamX Open Platform" },
+  "plugins": [
+    {
+      "name": "openplatform",
+      "source": "./plugins/openplatform",
+      "description": "Skills for building, publishing and hosting FinamX Open Platform extensions: guided path from an empty folder to a reviewed widget, artifact upload, moderation troubleshooting, host embedding and agent-driven UI.",
+      "version": "1.0.0",
+      "category": "development",
+      "keywords": ["finamx", "openplatform", "extensions", "widgets", "mcp"]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+node_modules/
+.DS_Store
+plugins/openplatform/evals/results/
+*.log

@@ -1,0 +1,29 @@
+name: validate
+on:
+  push:
+  pull_request:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Repository self-check (skills, manifests, secrets)
+        run: node scripts/validate.mjs
+      - name: '@finamx imports exist in the published npm packages'
+        run: |
+          npm i --no-save --no-audit --no-fund --no-package-lock @finamx/host-bridge @finamx/extension-sdk @finamx/bridge-protocol react@19 react-dom@19
+          node scripts/check-imports.mjs
+      - name: Claude Code marketplace and plugin validation
+        run: |
+          npx -y @anthropic-ai/claude-code plugin validate .
+          npx -y @anthropic-ai/claude-code plugin validate ./plugins/openplatform
+      - name: Extension template builds, passes checks and runs inside a real host
+        working-directory: plugins/openplatform/skills/openplatform-ext-init/assets/template
+        env: { CHROME_PATH: /usr/bin/google-chrome }
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+          node scripts/finamx/host-check.mjs
+          node scripts/finamx/publish.mjs --dry-run --skip-checks

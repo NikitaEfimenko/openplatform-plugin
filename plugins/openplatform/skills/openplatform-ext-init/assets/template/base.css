@@ -1,0 +1,45 @@
+/* Palette as CSS variables. The host overrides them through tokens (src/host-tokens.js); never hard-code colors or
+   radii in components, use the variables so the host theme applies. No inline styles anywhere (CSP style-src 'self'). */
+:root{
+  --bg:#F2F2F7; --surface:#FFFFFF; --sunken:#F2F2F7; --line:#E5E5EA; --line-strong:#D1D1D6;
+  --fg:#1C1C1E; --muted:#6E6E76; --faint:#A1A1A8;
+  --accent:#7863F6; --accent-soft:#7863F61A; --on-accent:#fff;
+  --up:#038C5A; --down:#D92B2B; --down-soft:#D92B2B14; --warn:#B7791F; --warn-soft:#B7791F18;
+  --font:-apple-system,"Segoe UI",Roboto,Inter,sans-serif;
+  --on-surface:var(--fg); --hover:#E9E9EF; --on-hover:var(--fg);
+  --radius:10px; --r-md:max(0px,calc(var(--radius) - 2px)); --r-xl:calc(var(--radius) + 4px);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#0A0A0A; --surface:#1C1C1E; --sunken:#2C2C2E; --line:#2C2C2E; --line-strong:#3A3A3C;
+  --fg:#F2F2F7; --muted:#A1A1A8; --faint:#6E6E76; --accent:#8A7CF8; --accent-soft:#8A7CF824; --hover:#2C2C2E;
+  --up:#00C779; --down:#FF5A5A; --down-soft:#FF5A5A1F; --warn:#E0A43A; --warn-soft:#E0A43A22; color-scheme:dark}
+/* Before start (no data-boot) and during the handshake: hidden content, transparent background (no flash).
+   If the script never ran (usually a CSP violation) a notice appears after 4 s. */
+:root:not([data-boot]),:root[data-boot="wait"]{color-scheme:light dark}
+:root:not([data-boot]) body,:root[data-boot="wait"] body{background:transparent}
+:root:not([data-boot]) .wrap,:root[data-boot="wait"] .wrap{visibility:hidden}
+:root:not([data-boot]) body::after{content:"The widget did not start: its script did not run. See the browser console.";display:block;margin:12px;padding:14px 16px;border-radius:14px;border:1px solid #B7791F;background:#FFF6E5;color:#1C1C1E;font:14px/1.45 system-ui,sans-serif;visibility:hidden;animation:boot-fail 0s linear 4s forwards}
+@keyframes boot-fail{to{visibility:visible}}
+:root[data-boot="error"] .wrap>:not(#state){display:none}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--font)}
+button,input,select{font:inherit;color:inherit}
+.wrap{display:flex;flex-direction:column;min-height:100vh}
+.bar{display:flex;gap:10px;align-items:center;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar h1{font-size:14px;margin:0;font-weight:700}
+.body{padding:12px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.mut{color:var(--muted)}
+.chip{font-size:11.5px;padding:2px 8px;border-radius:999px;background:var(--sunken);color:var(--muted)}
+.state{color:var(--on-surface);margin:12px;padding:14px 16px;border-radius:var(--r-xl);border:1px solid var(--line-strong);background:var(--surface)}
+.state b{display:block;margin-bottom:4px}
+.state.denied{border-color:var(--down);background:var(--down-soft)}
+.state.unavail{border-color:var(--warn);background:var(--warn-soft)}
+.btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--on-surface);border-radius:var(--r-md);padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:var(--accent);background:var(--hover);color:var(--on-hover)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=text]{padding:6px 10px;border-radius:var(--r-md);border:1px solid var(--line-strong);background:var(--sunken);min-width:180px}

@@ -1,0 +1,5 @@
+{
+  "name": "finamx-openplatform",
+  "owner": { "name": "FinamX Open Platform" },
+  "plugins": [ { "name": "openplatform", "source": "plugins/openplatform" } ]
+}

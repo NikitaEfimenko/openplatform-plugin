@@ -1,0 +1,24 @@
+{
+  "extensionId": "com.example.hello-widget",
+  "displayName": "Hello widget",
+  "description": "Shows the instrument selected by neighbouring widgets and sends a ticker to them.",
+  "summary": "Instrument relay demo widget.",
+  "platformSupport": ["web"],
+  "visibility": "public",
+  "desiredHostIds": [],
+  "versions": [
+    {
+      "version": "0.1.0",
+      "changelog": "First release.",
+      "capabilitiesRequested": ["ui.toast"],
+      "surfaces": {
+        "ui": { "renderMode": "external-embed" },
+        "topics": {
+          "subscribes": [{ "topicType": "fdc3.instrument", "delivery": ["bridge"] }],
+          "publishes": [{ "topicType": "fdc3.instrument", "delivery": ["bridge"] }]
+        }
+      },
+      "monetization": { "type": "free" }
+    }
+  ]
+}

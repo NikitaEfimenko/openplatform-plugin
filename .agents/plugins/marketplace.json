@@ -1,0 +1,12 @@
+{
+  "name": "finamx-openplatform",
+  "interface": { "displayName": "FinamX Open Platform" },
+  "plugins": [
+    {
+      "name": "openplatform",
+      "source": { "source": "local", "path": "./plugins/openplatform" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Developer Tools"
+    }
+  ]
+}

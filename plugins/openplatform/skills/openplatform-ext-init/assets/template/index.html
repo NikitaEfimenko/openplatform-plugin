@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello widget</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar"><h1>Hello widget</h1><span class="chip" id="mode"></span></div>
+  <div id="state" class="state" hidden></div>
+  <main class="body">
+    <p class="mut">Selected instrument: <b id="instrument">none</b></p>
+    <div class="row">
+      <input id="ticker" type="text" placeholder="Ticker, e.g. SBER" aria-label="Ticker">
+      <button id="pick" class="btn primary" type="button">Send to neighbours</button>
+    </div>
+  </main>
+</div>
+</body>
+</html>

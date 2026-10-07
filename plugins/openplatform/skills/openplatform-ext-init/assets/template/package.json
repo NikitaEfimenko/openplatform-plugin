@@ -1,0 +1,25 @@
+{
+  "name": "hello-widget",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "dev": "node build.mjs && node scripts/finamx/dev-server.mjs",
+    "check": "node scripts/finamx/check.mjs",
+    "check:host": "node build.mjs && node scripts/finamx/host-check.mjs",
+    "publish:ext": "npm run build && node scripts/finamx/publish.mjs",
+    "status:ext": "node scripts/finamx/publish.mjs status"
+  },
+  "dependencies": {
+    "@finamx/bridge-protocol": "^2.1.0",
+    "@finamx/extension-sdk": "^2.0.0"
+  },
+  "devDependencies": {
+    "@finamx/host-bridge": "^2.1.1",
+    "esbuild": "^0.25.0",
+    "playwright-core": "^1.50.0"
+  },
+  "engines": { "node": ">=20" }
+}
