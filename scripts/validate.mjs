@@ -92,6 +92,7 @@ for (const f of walk(PLUGIN)) {
 const hooksDir = join(PLUGIN, 'hooks');
 const hooksFile = join(hooksDir, 'hooks.json');
 let hookScripts = [];
+const HOOK_IMPORTS = ['node:fs', 'node:path', 'node:url', 'node:os', 'node:crypto', './lib.mjs'];
 if (!existsSync(hooksFile)) err(hooksFile, 'missing hooks.json');
 else {
   const hj = json(hooksFile);
@@ -109,6 +110,13 @@ if (existsSync(hooksDir)) {
   for (const f of hookScripts) {
     const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8', shell: false });
     if (r.status !== 0) err(f, 'does not parse: ' + (r.stderr || '').split('\n')[0]);
+    // Hooks are advisory: they read local files and print text. They start no process and open no socket.
+    const src = readFileSync(f, 'utf8');
+    if (/child_process|\b(spawn|spawnSync|execFile|execFileSync|execSync|fork)\b|\bexec\(/.test(src)) err(f, 'hooks must not start a process (no child_process, spawn or exec)');
+    if (/node:(net|http|https|http2|tls|dgram|dns)\b|\bfetch\(|\bimport\(/.test(src)) err(f, 'hooks must not use the network or a dynamic import');
+    for (const m of src.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
+      if (!HOOK_IMPORTS.includes(m[1])) err(f, `hooks may import only ${HOOK_IMPORTS.join(', ')} (found ${m[1]})`);
+    }
   }
 }
 const agentsDir = join(PLUGIN, 'agents');

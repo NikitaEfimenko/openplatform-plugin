@@ -1,7 +1,10 @@
 # Agent loop without hooks or subagents
 
-In Claude Code the plugin can run hooks (session start, after an edit) and subagents (a dev watcher and a reviewer)
-for you. Codex, Cursor and other agents do the same steps by hand. Follow them in any extension project (a folder with
+In Claude Code the plugin has hooks (session start, after an edit) and subagents (a dev watcher and a reviewer).
+The hooks only print context and reminders: the session-start hook shows the pulled domains and recent dev events,
+and the after-edit hook prints one line reminding you to run `finamx-ext check --json`. No hook runs the CLI or
+anything else from the project, so in Claude Code too you run every command below yourself. Codex, Cursor and other
+agents get no reminders and do the same steps by hand. Follow them in any extension project (a folder with
 `manifest.json` and `finamx-ext` in `package.json`).
 
 ## 1. At the start of a session

@@ -1,23 +1,26 @@
-// PostToolUse hook (Write|Edit|MultiEdit): runs the project's own `finamx-ext check --json` and
-// returns its errors to the agent. Silent when the check is clean or nothing applies.
+// PostToolUse hook (Write|Edit|MultiEdit): ADVISORY ONLY. When an edit touched a FinamX extension project
+// it prints one line that tells the agent to run `finamx-ext check --json`. It starts no process and runs
+// nothing from the project: the agent runs the check itself, under the normal permission prompts.
 import nodeFs from 'node:fs';
-import { execFile as nodeExecFile } from 'node:child_process';
+import os from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
-import { hasExtensionManifest, projectRoot, runHook, sanitize } from './lib.mjs';
+import { SAFE_NAME, hasSurfacesManifest, isSymlink, projectRoot, runHook } from './lib.mjs';
 
 const EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx', '.css', '.html', '.json']);
 const SKIP_SEGMENTS = new Set(['node_modules', 'dist', '.git', '.finamx']);
-const SECRET_NAME = /TOKEN|SECRET|PASSWORD|KEY/i;
-const MAX_ERRORS = 20;
-const MAX_TOTAL = 6000;
+const MAX_WALK_UP = 12;
+const MAX_HOSTS = 3;
+/** One note per project and session in this window, so a burst of edits is not answered line by line. */
+export const DEBOUNCE_MS = 120000;
 
-export function scrubEnv(source) {
-  const out = { ...source };
-  for (const name of Object.keys(out)) {
-    if (name.startsWith('FINAMX_') || SECRET_NAME.test(name)) delete out[name];
+function real(p, fs) {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return path.resolve(p);
   }
-  return out;
 }
 
 function inside(root, p) {
@@ -25,75 +28,95 @@ function inside(root, p) {
   return rel !== '' && !rel.startsWith('..') && !path.isAbsolute(rel);
 }
 
+/** Nearest directory at or above the file, not above the boundary and at most MAX_WALK_UP levels up, that holds an extension manifest. */
 function findProjectDir(file, boundary, fs) {
   let dir = path.dirname(file);
-  while (inside(boundary, path.join(dir, 'x'))) {
-    if (hasExtensionManifest(dir, fs)) return dir;
+  for (let i = 0; i <= MAX_WALK_UP; i++) {
+    if (dir !== boundary && !inside(boundary, dir)) return null;
+    if (hasSurfacesManifest(dir, fs)) return dir;
+    if (dir === boundary) return null;
     const up = path.dirname(dir);
-    if (up === dir) break;
+    if (up === dir) return null;
     dir = up;
   }
-  return hasExtensionManifest(boundary, fs) && file.startsWith(boundary) ? boundary : null;
+  return null;
 }
 
-function formatEntry(x) {
-  if (typeof x === 'string') return sanitize(x, 300);
-  if (x && typeof x === 'object') return sanitize([x.file, x.code, x.message].filter((v) => typeof v === 'string').join(' '), 300);
-  return sanitize(String(x), 300);
+/** Names of pulled host domains (not the general templates), read from directory names only. */
+function pulledHosts(projectDir, fs) {
+  const dir = path.join(projectDir, '.finamx', 'domain');
+  let names;
+  try {
+    names = fs.readdirSync(dir);
+  } catch {
+    return [];
+  }
+  return names
+    .filter((n) => n !== 'templates' && !n.startsWith('.') && SAFE_NAME.test(n) && !/[/`]/.test(n))
+    .sort()
+    .filter((n) => {
+      const p = path.join(dir, n);
+      try {
+        return !isSymlink(p, fs) && fs.statSync(p).isDirectory();
+      } catch {
+        return false;
+      }
+    });
 }
 
-export async function run(input, deps) {
-  const { fs, execFile, env } = deps;
-  const execPath = deps.execPath || process.execPath;
+/** True when a note for this project and session was printed less than DEBOUNCE_MS ago. Any doubt means "not yet". */
+function notedRecently(key, { fs, stateDir, now }) {
+  try {
+    if (isSymlink(stateDir, fs)) return false;
+    fs.mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+    const file = path.join(stateDir, key);
+    let last = 0;
+    try {
+      const st = fs.lstatSync(file);
+      if (!st.isFile()) return false;
+      last = st.mtimeMs;
+    } catch {
+      // first note
+    }
+    if (last && now - last >= 0 && now - last < DEBOUNCE_MS) return true;
+    fs.writeFileSync(file, '', { mode: 0o600 });
+    fs.utimesSync(file, new Date(now), new Date(now));
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+export function run(input, deps) {
+  const { fs, env } = deps;
   const fp = input && input.tool_input && input.tool_input.file_path;
   if (typeof fp !== 'string' || !fp) return '';
-  const boundary = projectRoot(input, env);
-  if (!boundary) return '';
-  const abs = path.resolve(input.cwd || boundary, fp);
-  if (!inside(path.resolve(boundary), abs)) return '';
+  const rootRaw = projectRoot(input, env);
+  if (!rootRaw) return '';
+  // Real paths on both sides: a symlinked project root (or /tmp vs /private/tmp) must not hide the edit.
+  const boundary = real(path.resolve(rootRaw), fs);
+  const absRaw = path.resolve(input.cwd || rootRaw, fp);
+  const abs = path.join(real(path.dirname(absRaw), fs), path.basename(absRaw));
+  if (!inside(boundary, abs)) return '';
   if (!EXTENSIONS.has(path.extname(abs).toLowerCase())) return '';
-  const projectDir = findProjectDir(abs, path.resolve(boundary), fs);
+  if (path.relative(boundary, abs).split(path.sep).some((s) => SKIP_SEGMENTS.has(s))) return '';
+  const projectDir = findProjectDir(abs, boundary, fs);
   if (!projectDir) return '';
-  const rel = path.relative(projectDir, abs);
-  if (abs.split(path.sep).includes('node_modules')) return '';
-  if (rel.split(path.sep).some((s) => SKIP_SEGMENTS.has(s))) return '';
-  if (path.relative(path.resolve(boundary), abs).split(path.sep).some((s) => SKIP_SEGMENTS.has(s))) return '';
-  const cli = path.join(projectDir, 'node_modules', '@finamx', 'extension-sdk', 'dist', 'cli', 'index.js');
-  try {
-    if (!fs.statSync(cli).isFile()) return '';
-  } catch {
-    return '';
+  const session = typeof input.session_id === 'string' ? input.session_id : '';
+  const key = createHash('sha256').update(session + '\0' + projectDir).digest('hex').slice(0, 32);
+  const stateDir = deps.stateDir || path.join(os.tmpdir(), 'finamx-openplatform-hooks');
+  const now = typeof deps.now === 'number' ? deps.now : Date.now();
+  if (notedRecently(key, { fs, stateDir, now })) return '';
+  const hosts = pulledHosts(projectDir, fs);
+  let note = 'FinamX extension project edited: run `finamx-ext check --json` and fix every entry of `errors` before going on';
+  if (hosts.length) {
+    const shown = hosts.slice(0, MAX_HOSTS).map((h) => '`' + h + '`').join(', ');
+    const more = hosts.length > MAX_HOSTS ? ` and ${hosts.length - MAX_HOSTS} more` : '';
+    note += `; after a manifest, scope or topic change also \`finamx-ext check --host <hostId> --json\` (pulled: ${shown}${more})`;
   }
-  const { stdout, stderr } = await new Promise((resolve) => {
-    execFile(
-      execPath,
-      [cli, 'check', '--json'],
-      { cwd: projectDir, timeout: 60000, maxBuffer: 1048576, windowsHide: true, shell: false, env: scrubEnv(env) },
-      (_err, out, errOut) => resolve({ stdout: String(out || ''), stderr: String(errOut || '') }),
-    );
-  });
-  let report;
-  try {
-    report = JSON.parse(stdout);
-  } catch {
-    report = null;
-  }
-  const relOut = sanitize(rel.split(path.sep).join('/'), 200);
-  if (!report || typeof report !== 'object' || !Array.isArray(report.errors)) {
-    return 'finamx-ext check did not return JSON: ' + sanitize(stderr, 300);
-  }
-  if (report.errors.length === 0) return '';
-  const errors = report.errors.slice(0, MAX_ERRORS).map((e) => '- ' + formatEntry(e));
-  const lines = [`finamx-ext check --json found ${report.errors.length} error(s) after editing ${relOut}:`, ...errors];
-  if (report.errors.length > MAX_ERRORS) lines.push(`(${report.errors.length - MAX_ERRORS} more not shown)`);
-  const warnN = Array.isArray(report.warnings) ? report.warnings.length : 0;
-  if (warnN) lines.push(`${warnN} warning(s)`);
-  if (report.errors.some((e) => /dist/.test(formatEntry(e)))) lines.push('Hint: run npm run build, then the check runs on the new bundle.');
-  let out = lines.join('\n');
-  if (out.length > MAX_TOTAL) out = out.slice(0, MAX_TOTAL - 20) + '\n(truncated)';
-  return out;
+  return note + '. This hook ran nothing.';
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await runHook('PostToolUse', (input, base) => run(input, { ...base, execFile: nodeExecFile, execPath: process.execPath }));
+  await runHook('PostToolUse', (input, base) => run(input, base));
 }

@@ -85,6 +85,10 @@ otherwise the agent sees two versions with different rules.
 
 The plugin ships three hooks and two subagents.
 
+The hooks read local files and print text. They start no process, run nothing from the project and make no network
+call (`scripts/validate.mjs` fails on `child_process`, a network module or `fetch(` in `hooks/`), and they never read
+`.env` or credentials. The agent runs `finamx-ext` itself, under the normal permission prompts.
+
 The subagents are read-only by construction: their tool list is `Read, Grep, Glob`, so they have no shell and no
 network and cannot run `finamx-ext`, edit a file or publish. The main session runs the CLI (`finamx-ext check --json`,
 `check --host <id> --json`, `domain pull --check --json`, `hosts --json`; the last two call the portal with the
@@ -95,7 +99,7 @@ boundary. The PreToolUse guard is only a hint on top of it: it stops the two sub
 | Hook | What it does |
 |---|---|
 | SessionStart | in an extension project, adds the pulled host domains (names and scopes only) and the latest dev events as bounded context |
-| PostToolUse (Write, Edit, MultiEdit) | runs `finamx-ext check --json` and shows the findings to the agent |
+| PostToolUse (Write, Edit, MultiEdit) | advisory only: after an edit in an extension project (a `manifest.json` with `versions[].surfaces`) it prints one line telling the agent to run `finamx-ext check --json` (and `check --host <hostId>` when a host domain is pulled). At most one line per two minutes per session and project |
 | PreToolUse (Read, Grep) | best-effort hint: the plugin subagents do not open `.env*` or `credentials.json` by name. Not a security control |
 
 | Agent | What it does |
@@ -205,7 +209,7 @@ MIT
 виджет под настоящими CSP и мостом хоста, отправляет его на портал и объясняет любые ошибки модерации и портала.
 
 В версии 2.0: скилл `openplatform-ext-plan` (PRD для набора расширений), хуки и агенты Claude Code
-(контекст хоста при старте, `finamx-ext check` после правок, ревьюер перед публикацией), шаблон и скрипты
+(контекст хоста при старте, напоминание запустить `finamx-ext check` после правок, read-only ревьюер перед публикацией; хуки ничего не запускают), шаблон и скрипты
 заменены на `npx @finamx/extension-sdk init` и `finamx-ext`. Обновление с 1.x: удалите копии
 `.claude/skills/openplatform-*` и `.agents/skills/openplatform-*`, см. «Upgrading from 1.x». Контекст для v0 и
 Databutton: `finamx-ext context <hostId>` (SDK 2.3.0+) или кнопка «Скопировать контекст» в кабинете.

@@ -86,6 +86,19 @@ export function hasExtensionManifest(dir, fs = nodeFs) {
   }
 }
 
+/** Reads manifest.json (<= 256 KB) and tells whether some `versions[]` entry declares `surfaces`. */
+export function hasSurfacesManifest(dir, fs = nodeFs) {
+  try {
+    const file = path.join(dir, 'manifest.json');
+    const st = fs.statSync(file);
+    if (!st.isFile() || st.size > 262144) return false;
+    const m = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return !!m && Array.isArray(m.versions) && m.versions.some((v) => v && typeof v === 'object' && v.surfaces && typeof v.surfaces === 'object');
+  } catch {
+    return false;
+  }
+}
+
 export function isExtensionProject(root, fs = nodeFs) {
   if (!root) return false;
   if (hasExtensionManifest(root, fs)) return true;
