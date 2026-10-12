@@ -1,15 +1,14 @@
 ---
 name: openplatform-ext-publish
 description: >-
-  Submits a FinamX Open Platform extension to the platform portal and sees it through review: publisher account and
-  API token, choosing how the code is delivered (artifact upload of dist/ vs embedBundleUrl vs headless), uploading
-  with retries, new versions, moderation status, and every error the portal returns (401, 404 NOT_FOUND for an
-  extension owned by another account, 409 EXTENSION_EXISTS / VERSION_NOT_NEWER / DOMAINS_NOT_APPROVED /
-  EXTENSION_INTEGRITY_DRIFT, BUNDLE_IMPORT_FAILED, INVALID_MANIFEST). Use it whenever someone wants to publish,
-  submit, upload, release, update or check the review status of a FinamX / Open Platform extension or widget, runs
-  finamx-ext publish, asks whether the platform takes the files from their own server, why a version is not live,
-  why moderation fails, or why the host still shows an old version, even if they only say "send it" or
-  "отправь расширение". To build or fix the extension itself use openplatform-ext-init.
+  Submits a FinamX Open Platform extension to the platform portal with finamx-ext publish and sees it through review:
+  pre-publish checks and review, developer key (finamx-ext login), choosing how the code is delivered (artifact upload of dist/ vs embedBundleUrl vs
+  headless), new versions, moderation status (finamx-ext status), and every error the portal returns (401, 404
+  NOT_FOUND, 409 EXTENSION_EXISTS / VERSION_NOT_NEWER / DOMAINS_NOT_APPROVED, BUNDLE_IMPORT_FAILED, INVALID_MANIFEST). Use it whenever someone wants to publish, submit,
+  upload, release, update or check the review status of a FinamX / Open Platform extension or widget, asks whether the
+  platform takes the files from their own server, why a version is not live, why moderation fails, or why the host
+  still shows an old version, even if they only say "send it" or "отправь расширение". To build or fix the extension
+  itself use openplatform-ext-init.
 ---
 
 # FinamX Open Platform: submit and release an extension
@@ -18,31 +17,42 @@ The portal (default `https://openplatform.changesandbox.ru`) takes a manifest an
 A moderator reviews the submission, publishes it and enables it for hosts. Your job: get it submitted the easiest
 way, explain what happens next, and turn any error into a concrete next step.
 
-Talk in the developer's language. Never ask for the token in the chat and never print it.
+Talk in the developer's language. Never ask for the key in the chat and never print it.
 
 ## 1. Before submitting
 
-The extension must pass its checks. If the project came from the openplatform-ext-init template:
+Run, in this order, and fix what fails (a submission that is empty in the host wastes a review round):
 
 ```bash
-npm run build && npm run check:host
+npm run build
+npx finamx-ext check                       # manifest + built files
+npx finamx-ext check --host <hostId>       # the built widget against the pulled domain of each target host
+npx finamx-ext domain pull --check         # the pulled host domain is still current (exit 1 = pull again)
 ```
 
-Otherwise copy `scripts/check.mjs` and `scripts/publish.mjs` from this skill into the project as
-`scripts/finamx/check.mjs` and `scripts/finamx/publish.mjs`, then `node scripts/finamx/check.mjs --dist <build dir>`.
-If the build fails the checks, fix it first (the openplatform-ext-init skill, its sandbox-and-csp reference): a submission
-that is empty in the host wastes a review round.
+Then the pre-publish review. In Claude Code the openplatform-reviewer subagent does it; elsewhere do it yourself,
+using the full checklist (the review-checklist reference of the openplatform-ext-init skill). The short version:
 
-## 2. Account and token
+1. Manifest: valid, `platformSupport` and description present, version higher than any stored one, changelog written.
+2. Every `csp.*` origin is justified by a call the code really makes; nothing broader than needed.
+3. UI follows the host UI tokens (colours, fonts, theme switch).
+4. Scopes equal what the pulled domain of the host lists and what the code actually calls: no more, no less.
+5. Topics: own topics are named `<extensionId>.<name>` and have a schema; host topics have none.
+6. No secrets in the manifest, the build or the repository.
+
+Show the user the result and wait for their explicit confirmation. Never run `finamx-ext publish` without it.
+
+## 2. Account and key
 
 1. Register at `<portal>/developer/register` (email, password, name). One account per publisher; the account that
    submits an `extensionId` first owns it for good.
-2. Dashboard (`<portal>/developer/dashboard`) → **Generate API Token**. It is shown once.
-3. The developer puts it into `.env` as `FINAMX_DEV_TOKEN=…` (make sure `.env` is in `.gitignore`), or exports it
-   in the shell. For a local platform also set `FINAMX_API_URL=http://127.0.0.1:3001`.
+2. Cabinet (`<portal>/developer/dashboard`) -> generate a developer key. It is shown once.
+3. Store it with `finamx-ext login` (hidden prompt, or `--token-stdin` fed from a password manager), or as
+   `FINAMX_DEV_TOKEN` in a gitignored `.env`. Never ask for the key in the chat, never paste or print it. Host keys
+   are refused by the CLI and must never be used here.
 
-Check it without printing it: `node scripts/finamx/publish.mjs status` answers 401 for a bad token and 404 if this
-account does not own the extension.
+Key order: `--token`, `FINAMX_DEV_TOKEN`, `.env`, the stored credentials. Check it without printing it:
+`npx finamx-ext status` answers 401 for a bad key and 404 if this account does not own the extension.
 
 ## 3. Choose the delivery mode
 
@@ -61,26 +71,27 @@ Answers to the usual questions:
 - *Is it exactly the files I send?* Yes for artifacts: the version is pinned to the sha256 of the upload. At runtime
   the widget can reach only the origins listed in `csp.*`.
 - *How do I know which mode a version used?* Artifact versions have `surfaces.ui.artifact { sha256, entry }` and the
-  upload step prints the sha256. A moderation error that mentions a `bundle https://…` domain means the version kept
+  publish output prints the sha256. A moderation error that mentions a `bundle https://…` domain means the version kept
   `embedBundleUrl` as a live link (it was not imported).
 
 ## 4. Submit
 
 ```bash
-node scripts/finamx/publish.mjs --dry-run   # shows mode, artifact sha256 and the version JSON; sends nothing
-node scripts/finamx/publish.mjs             # check -> upload -> submit (or new version if it already exists)
-node scripts/finamx/publish.mjs status
+npx finamx-ext publish --dry-run   # shows the portal, mode, artifact sha256 and the version JSON; sends nothing
+npx finamx-ext publish             # checks -> upload -> submit (or a new version if the id already exists)
+npx finamx-ext status              # moderation status and moderator comment (--json for scripts)
 ```
 
-What the script does and why: it runs the checks; packs `dist/` with the SDK's own packer and uploads it
-(`POST /api/v1/developer/artifacts`); puts `artifact { sha256, entry }` into the last version; submits the manifest
-(`POST /api/v1/developer/extensions`); if the id already exists it submits only the last version
-(`POST /api/v1/developer/extensions/<id>/versions`). It retries network failures (some proxies drop connections)
-but never retries an HTTP answer, and explains every error code.
+What `finamx-ext publish` does: prints `portal <origin> (from --api|FINAMX_API_URL|.env|default)`; runs the pre-publish
+checks and stops on an error; when the last version has `surfaces.ui` with neither `embedBundleUrl` nor a pinned
+`surfaces.ui.artifact`, packs `./dist` (or `--dist`) and uploads it; a pinned artifact is sent as written unless
+`--artifact-dir` is given; submits the manifest, and on 409 `EXTENSION_EXISTS` submits the last version as a new
+version. It retries nothing blindly: if an answer is lost it asks the portal and tells you how to finish.
 
-The bare CLI also works for a first submission: `npx finamx-ext publish --artifact-dir dist --api <portal>`
-(token from `FINAMX_DEV_TOKEN`). Mind that its default `--api` is `http://localhost:3001`, and it cannot submit a
-new version of an existing extension: use the script for that.
+Safety stops, never work around them:
+- `INSECURE_API_URL`: the portal URL must be https (http only for localhost). Fix the URL.
+- `PORTAL_NOT_CONFIRMED`: a key from the environment is not sent to a portal that is named only by `.env`. Ask the
+  user to pass `--api <url>` explicitly. Never edit `.env` to get around it.
 
 ## 5. After submitting: what happens
 
@@ -96,7 +107,7 @@ is needed. More: `references/review-and-hosts.md`.
 ## 6. New versions
 
 1. Append a new entry to `versions[]` with a higher semver and a changelog. Never edit a version that was reviewed.
-2. `npm run build && node scripts/finamx/publish.mjs`.
+2. `npm run build && npx finamx-ext publish` (it submits a new version automatically on 409).
 3. For a published extension the version waits as `pending_version`; the live one keeps running. A newer
    submission replaces a pending one. For an extension still `in_review` the version is appended and the whole
    extension goes back to review.
@@ -111,11 +122,11 @@ Full table with causes and fixes: `references/errors.md`. The ones people hit mo
 
 | Answer | Meaning | Do |
 |---|---|---|
-| 401 UNAUTHORIZED | token missing/invalid | new token, check `.env` is loaded |
+| 401 UNAUTHORIZED | key missing/invalid | new key, `finamx-ext login`, check `.env` is loaded |
 | 404 NOT_FOUND on a new version | the extension exists but another account owns it | use the owner's token, ask moderators to transfer, or pick another id |
-| 409 EXTENSION_EXISTS | id taken | the script switches to a new version automatically if it is yours |
+| 409 EXTENSION_EXISTS | id taken | `finamx-ext publish` switches to a new version automatically if it is yours |
 | 409 VERSION_NOT_NEWER | version not higher than stored ones | bump semver |
-| 400 INVALID_MANIFEST | schema violation | read `details`, run `check.mjs` |
+| 400 INVALID_MANIFEST | schema violation | read `details`, run `finamx-ext check` |
 | 403 NAMESPACE_RESERVED | `com.finamx.*` | own prefix |
 | 400 BUNDLE_IMPORT_FAILED | embedBundleUrl could not be downloaded | 200 without redirects, ≤ 5 MiB / 200 files, or switch to artifact upload |
 | 409 DOMAINS_NOT_APPROVED (moderator side) | an external domain is not approved yet | moderator approves it in Trust & integrity |
@@ -129,4 +140,3 @@ Full table with causes and fixes: `references/errors.md`. The ones people hit mo
 | `references/errors.md` | every portal and launch error with cause and fix |
 | `references/review-and-hosts.md` | what the moderator does, statuses, host availability, why a host shows an old version |
 | `references/portal-api.md` | developer API endpoints for scripting and CI |
-| `scripts/publish.mjs`, `scripts/check.mjs` | copy into the project as `scripts/finamx/` |
