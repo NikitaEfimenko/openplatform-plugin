@@ -42,10 +42,10 @@ For the widest reach, author or port a single-file MCP App (`openplatform-ext-in
 
 ## Rules
 
-- Host key server-side only; the chat client holds only the host's own OAuth token (security rule 8).
+- Host key server-side only; the chat client holds only the host's own OAuth token.
 - Never take the bucket from the request body or a client header: only from the verified token.
 - One active key per host (Issue key deletes the previous keys): the relay and every other server of the host share it via secrets.
-- `finamx_*` are app-only; the platform authorises them by launch token + grants, not by visibility (rule 16).
+- `finamx_*` are app-only; the platform authorises them by launch token + grants, not by visibility.
 - The chat client enforces the view CSP; FinamX enforces its own sandbox only in FinamX hosts.
 - Stateless server: `initialize` advertises `tools.listChanged` but no notification is sent (GAP G8); new extensions appear after the client reconnects.
 
