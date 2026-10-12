@@ -1,12 +1,12 @@
 ---
 name: openplatform-ext-init
 description: >-
-  Guides a developer from an empty folder (or an existing web app) to a working FinamX Open Platform extension
+  Takes a developer from an empty folder (or an existing web app) to a working FinamX Open Platform extension
   (widget, headless topic processor or MCP tools): interviews with recommended answers, scaffolds the project with
   the finamx-ext CLI (npx @finamx/extension-sdk init), pulls the real host domain (finamx-ext hosts, domain pull,
   .finamx/domain), writes manifest.json (versions[].surfaces), wires @finamx/extension-sdk (host bridge, host theme
-  and UI tokens, topics like fdc3.instrument, host methods), settles data, secrets and backend, and verifies the
-  build with finamx-ext check, check --host and dev under the platform CSP. Use it whenever someone wants to build,
+  and UI tokens, topics, host methods), settles data and backend, and verifies the build with finamx-ext
+  check, check --host and dev under the platform CSP. Use it whenever someone wants to build,
   convert, fix or check a FinamX / Finam / Open Platform extension or widget, mentions manifest.json surfaces,
   finamx-ext, a host domain, .finamx, a widget that is blank inside the host, or says "I want to send you an
   extension". For submitting, versions and moderation use openplatform-ext-publish; for embedding
