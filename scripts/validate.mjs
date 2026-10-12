@@ -122,7 +122,10 @@ for (const f of agentFiles) {
   const n = /^name:\s*(\S+)/m.exec(fm[1]);
   if (!n || n[1] !== stem) err(file, `frontmatter name must equal the file stem (${stem})`);
   if (!/^description:\s*\S/m.test(fm[1]) && !/^description:\s*[>|]-?\s*\n\s+\S/m.test(fm[1])) err(file, 'missing description');
-  if (!/^tools:/m.test(fm[1])) err(file, 'missing tools line');
+  const tools = /^tools:\s*(.*)$/m.exec(fm[1]);
+  if (!tools) err(file, 'missing tools line');
+  // The subagents are read-only by construction: this tool list is the boundary, the PreToolUse guard is only a hint.
+  else if (tools[1].split(',').map(t => t.trim()).sort().join(',') !== 'Glob,Grep,Read') err(file, `tools must be exactly "Read, Grep, Glob" (found: ${tools[1]})`);
 }
 const evalsDir = join(PLUGIN, 'evals');
 const evalCases = existsSync(evalsDir) ? readdirSync(evalsDir, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== 'results').map(e => e.name) : [];

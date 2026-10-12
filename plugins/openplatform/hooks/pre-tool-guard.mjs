@@ -1,46 +1,37 @@
-// PreToolUse hook (Bash|Read|Grep): fences the plugin's own subagents off from publishing,
-// login and secret files. The main session and other subagents are never blocked.
+// PreToolUse hook (Read|Grep): a best-effort hint that keeps the plugin's own subagents from opening
+// secret files by name. It is NOT the boundary: the subagents are read-only because their tool list is
+// Read, Grep, Glob (no shell, no network). A glob such as `.e*` or a search over a whole directory is
+// not caught here. The main session and other subagents are never blocked.
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { readStdinJson } from './lib.mjs';
 
 const AGENT = /(^|:)openplatform-(reviewer|dev-watcher)$/;
-const REASON = 'openplatform subagents never publish, log in or read secrets; hand this back to the user';
-const COMMANDS = [
-  /\bfinamx-ext\s+(publish|login|push|link|submit)\b/,
-  /\bnpm\s+run\s+publish:ext\b/,
-  /\bnpx\s+(@finamx\/extension-sdk|finamx-ext)\s+(publish|login)\b/,
-  /(^|[;&|(]\s*|^\s*)(printenv|env)(\s|$)/,
-];
-const ENV_REF = /(?:^|[\s/='"])(\.env(?:\.[\w-]+)*)(?=$|[\s'"|;&)<>*?[{])/g;
-const CRED_REF = /credentials\.json/;
+const REASON = 'openplatform subagents do not read secret files; if the file is needed, hand this back to the user';
+// Example files hold no secrets by convention.
+const EXAMPLES = new Set(['.env.example', '.env.sample', '.env.template']);
+const SECRET_SEGMENT = /^(\.env[^/\\]*|.*credentials\.json)$/;
 
+/** True when a path or glob names a secret file in any of its segments. */
 function secretRef(text) {
-  if (typeof text !== 'string') return false;
-  if (CRED_REF.test(text)) return true;
-  for (const m of text.matchAll(ENV_REF)) if (m[1] !== '.env.example') return true;
-  return false;
+  if (typeof text !== 'string' || !text) return false;
+  return text.split(/[/\\{},]+/).some((seg) => {
+    const s = seg.trim().replace(/^['"]|['"]$/g, '');
+    return SECRET_SEGMENT.test(s) && !EXAMPLES.has(s);
+  });
 }
 
 export function decide(input) {
   if (!input || typeof input.agent_type !== 'string' || !AGENT.test(input.agent_type)) return null;
   const ti = input.tool_input || {};
   switch (input.tool_name) {
-    case 'Bash': {
-      const c = ti.command;
-      if (typeof c !== 'string') return null;
-      if (COMMANDS.some((re) => re.test(c)) || secretRef(c)) return REASON;
-      return null;
-    }
     case 'Read': {
       const f = ti.file_path;
       if (typeof f !== 'string') return null;
-      const base = path.basename(f);
-      if (/^\.env(\..+)?$/.test(base) && base !== '.env.example') return REASON;
-      if (f.endsWith('credentials.json')) return REASON;
-      return null;
+      return secretRef(path.basename(f)) ? REASON : null;
     }
     case 'Grep':
+      // Only where the search runs matters. The pattern is free: the reviewer greps `.gitignore` for `.env`.
       return secretRef(ti.path) || secretRef(ti.glob) ? REASON : null;
     default:
       return null;

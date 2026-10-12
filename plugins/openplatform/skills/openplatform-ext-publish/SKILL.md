@@ -30,8 +30,20 @@ npx finamx-ext check --host <hostId>       # the built widget against the pulled
 npx finamx-ext domain pull --check         # the pulled host domain is still current (exit 1 = pull again)
 ```
 
-Then the pre-publish review. In Claude Code the openplatform-reviewer subagent does it; elsewhere do it yourself,
-using the full checklist (the review-checklist reference of the openplatform-ext-init skill). The short version:
+Then the pre-publish review, using the full checklist (the review-checklist reference of the openplatform-ext-init
+skill). In Claude Code the openplatform-reviewer subagent can do it, but it is read-only (tools Read, Grep, Glob; no
+shell, no network), so you run the CLI yourself first and hand it the output:
+
+```bash
+mkdir -p .finamx/review                    # add .finamx/review/ to .gitignore
+npx finamx-ext check --json > .finamx/review/check.json
+npx finamx-ext check --host <hostId> --json > .finamx/review/check-host-<hostId>.json
+npx finamx-ext domain pull --check --json > .finamx/review/domain-check.json
+npx finamx-ext hosts --json > .finamx/review/hosts.json
+```
+
+`domain pull --check` and `hosts` call the portal with the developer key; the usual permission prompts apply. Then
+start the reviewer with the project root and the host ids. Elsewhere do the review yourself. The short version:
 
 1. Manifest: valid, `platformSupport` and description present, version higher than any stored one, changelog written.
 2. Every `csp.*` origin is justified by a call the code really makes; nothing broader than needed.

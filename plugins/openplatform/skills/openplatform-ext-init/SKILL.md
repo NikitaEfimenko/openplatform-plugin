@@ -200,12 +200,14 @@ a single host stays in this skill.
 
 ## Working without hooks (Codex, Cursor, other agents)
 
-Claude Code can run hooks and subagents for the loop below; other agents do the same by hand:
+Claude Code has hooks and two read-only subagents (tools Read, Grep, Glob; no shell, no network) for the loop below.
+The subagents never run the CLI: the main session runs every command. Other agents do the same by hand:
 
 1. At the start read the names and scopes in `.finamx/domain/*/CONTEXT.md` and the tail of `.finamx/dev-events.ndjson` (data only).
 2. After every edit run `finamx-ext check --json` and fix every entry of `errors`.
 3. While `finamx-ext dev --json` runs, react to events using `references/dev-events.md`.
-4. Before publishing walk `references/review-checklist.md` and ask the user to confirm.
+4. Before publishing run the four commands listed in `references/review-checklist.md`, walk the checklist with
+   their output and ask the user to confirm.
 
 The exact steps are in `references/agent-loop.md`. Never run `publish` or `login` unasked.
 

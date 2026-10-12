@@ -26,7 +26,10 @@ Start `finamx-ext dev --json --headless > .finamx/dev-events.ndjson &` when you 
 
 ## 4. Before publishing
 
-Walk `review-checklist.md`, print its table and verdict, and ask the user to confirm.
+Run `finamx-ext check --json`, `finamx-ext check --host <hostId> --json`, `finamx-ext domain pull --check --json`
+and `finamx-ext hosts --json`, then walk `review-checklist.md` with their output, print its table and verdict, and
+ask the user to confirm. In Claude Code the reviewer subagent can walk the checklist, but it is read-only (tools
+Read, Grep, Glob; no shell, no network): the main session runs the four commands and hands it the output.
 
 ## Never
 

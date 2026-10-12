@@ -16,8 +16,9 @@ All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 - Skill `openplatform-ext-plan`: turns an idea into a PRD for one extension or a set of extensions. The approach is
   adapted from mattpocock/skills (MIT, see the skill's `NOTICE.md`).
 - Claude Code hooks: SessionStart adds pulled host domains and recent dev events as context; PostToolUse runs
-  `finamx-ext check --json` after edits; PreToolUse guards the plugin subagents.
-- Agents `openplatform-reviewer` and `openplatform-dev-watcher`.
+  `finamx-ext check --json` after edits; PreToolUse is a best-effort hint that keeps the plugin subagents from opening `.env*` and `credentials.json`.
+- Agents `openplatform-reviewer` and `openplatform-dev-watcher`, read-only by their tool list (Read, Grep, Glob):
+  the main session runs `finamx-ext` and hands them the output.
 - Evals `ext-plan-set`, `domain-pull-host-methods`, `dev-events-fix`.
 - References `cli`, `host-domain`, `migrate-from-scripts`, `agent-loop`, `review-checklist`, `dev-events`.
 

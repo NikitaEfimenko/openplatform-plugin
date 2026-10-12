@@ -83,19 +83,25 @@ otherwise the agent sees two versions with different rules.
 
 ## Hooks and agents (Claude Code)
 
-The plugin ships three hooks and two subagents. They only read local files and run the project's own `finamx-ext`:
-no network calls of their own, `.env` is never read, and the subagents never publish.
+The plugin ships three hooks and two subagents.
+
+The subagents are read-only by construction: their tool list is `Read, Grep, Glob`, so they have no shell and no
+network and cannot run `finamx-ext`, edit a file or publish. The main session runs the CLI (`finamx-ext check --json`,
+`check --host <id> --json`, `domain pull --check --json`, `hosts --json`; the last two call the portal with the
+developer key, and the usual permission prompts apply) and hands the output to the reviewer. That tool list is the
+boundary. The PreToolUse guard is only a hint on top of it: it stops the two subagents from opening `.env*` and
+`credentials.json` by name through Read or Grep, and a broad search or an unusual glob can get past it.
 
 | Hook | What it does |
 |---|---|
 | SessionStart | in an extension project, adds the pulled host domains (names and scopes only) and the latest dev events as bounded context |
 | PostToolUse (Write, Edit, MultiEdit) | runs `finamx-ext check --json` and shows the findings to the agent |
-| PreToolUse (Bash, Read, Grep) | guards the plugin subagents (no secrets, no publishing) |
+| PreToolUse (Read, Grep) | best-effort hint: the plugin subagents do not open `.env*` or `credentials.json` by name. Not a security control |
 
 | Agent | What it does |
 |---|---|
-| `openplatform-reviewer` | read-only pre-publish review of the manifest, CSP, UI tokens and scopes against the pulled host domain: ready / not ready |
-| `openplatform-dev-watcher` | reads `.finamx/dev-events.ndjson` from `finamx-ext dev` and proposes fixes for schema, scope and CSP errors |
+| `openplatform-reviewer` | read-only (Read, Grep, Glob) pre-publish review of the manifest, CSP, UI tokens and scopes against the pulled host domain and the CLI output the main session collected: ready / not ready |
+| `openplatform-dev-watcher` | read-only (Read, Grep, Glob): reads `.finamx/dev-events.ndjson` from `finamx-ext dev` and proposes fixes for schema, scope and CSP errors |
 
 ## Codex, Cursor and other agents
 
