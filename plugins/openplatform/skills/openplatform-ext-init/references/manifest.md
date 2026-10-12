@@ -70,7 +70,34 @@ Tools submit the **last** entry of `versions[]`; for a brand-new extension the w
 
 Hosts reach your MCP server only through the platform MCP gateway (tools appear as `<namespace>_<tool>`); they
 never call your URL directly. The namespace must be unique on the platform; topics named `<namespace>.<name>` also
-count as yours.
+count as yours. The URL must be `https://` (`http://localhost` only on a local platform). Stateful hosted MCP servers
+(those that require `Mcp-Session-Id`) work through the gateway; a stdio-only or `localhost` server is not reachable by it.
+
+## Scopes
+
+Scopes are declared by the host as free text; the platform has no fixed vocabulary. Read the real list with
+`finamx-ext domain pull <hostId>` (`methods[].requiredScope`, `consentMatrix[].needsScope`).
+
+| Rule | Detail |
+|---|---|
+| Request | list what you need in `versions[].capabilitiesRequested` |
+| Grant | at install the user grants a **subset** of what you requested |
+| Deny | a method the host does not declare, or whose scope is not granted, is denied (`SCOPE_DENIED` / `CAPABILITY_DENIED`) |
+| Widening | a new version that requests more scopes never widens grants silently: existing users keep their grants, the catalog shows `reconsentRequired` plus `missingScopes`, and calls behind the new scopes stay denied until the user consents again |
+
+Data scopes (portfolio, contacts, board) are private host data: use user-bound s2s (`user-bound-s2s.md`), not host-only calls.
+
+## Domain approval and integrity
+
+- Every external domain of a version needs moderator approval, per extension: the origin of `embedBundleUrl` and every
+  entry of `csp.frame`, `csp.connect` and `csp.resource`. A new domain in a new version means a new review; the version
+  cannot go live until it is approved (publish fails with `DOMAINS_NOT_APPROVED`).
+- Declare `integrity.bundleSha256` (or ship an artifact) so a hosted bundle is `verified`; without it the extension is
+  shown as `unverified` but stays available.
+- After review, do not change the bytes served at `embedBundleUrl` and do not redirect it to another origin. A periodic
+  monitor detects both and blocks launch with 409 `EXTENSION_INTEGRITY_DRIFT` until the reviewed bytes or origin are back
+  (the extension is not suspended). Ship changes as a new version.
+- Detection is periodic, so a hosted bundle is checked before it is served, not continuously.
 
 ## Examples
 

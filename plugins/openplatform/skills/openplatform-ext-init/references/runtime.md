@@ -105,3 +105,10 @@ export const DEV_FIXTURES = { 'market.quote': { symbol: 'SBER', price: 312.45 } 
 `alert/confirm/prompt` (no `allow-modals`), `eval` and `new Function`, WebAssembly, inline `<script>`/`<style>`/
 `style=""`/`onclick=""`, `fetch` of your own files, fonts from the artifact without a `csp.resource` entry,
 WebSockets (csp accepts only https origins). See `sandbox-and-csp.md` for workarounds.
+
+## Discovery namespaces
+
+`extension.*` MCP tools (`list`, `get`, `install`, `schema`, `present`) are the catalog of marketplace extensions for a
+host. `divkit.*` (`list`, `get`) is a separate platform-managed catalog of built-in DivKit slugs, not the extension
+registry: it needs no install, and your extension is published through `finamx-ext`, never as a DivKit slug. The old
+names `list_widgets` and `list_extensions` no longer exist. CLI details: `cli.md`.
