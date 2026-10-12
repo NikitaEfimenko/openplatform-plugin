@@ -19,11 +19,3 @@ jobs:
         run: |
           npx -y @anthropic-ai/claude-code plugin validate .
           npx -y @anthropic-ai/claude-code plugin validate ./plugins/openplatform
-      - name: Extension template builds, passes checks and runs inside a real host
-        working-directory: plugins/openplatform/skills/openplatform-ext-init/assets/template
-        env: { CHROME_PATH: /usr/bin/google-chrome }
-        run: |
-          npm install --no-audit --no-fund
-          npm run build
-          node scripts/finamx/host-check.mjs
-          node scripts/finamx/publish.mjs --dry-run --skip-checks

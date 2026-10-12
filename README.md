@@ -117,13 +117,12 @@ plugins/openplatform/
   evals/<case>/                     eval cases for `claude plugin eval`
 scripts/validate.mjs                repository self-check
 scripts/check-imports.mjs           @finamx imports vs published npm packages
-scripts/sync-shared.mjs             keeps shared tool copies identical
 ```
 
 ## Development
 
 ```bash
-node scripts/validate.mjs                       # frontmatter, manifests, shared copies, secrets, links, no outside references
+node scripts/validate.mjs                       # frontmatter, manifests, secrets, links, no outside references
 npm i --no-save @finamx/host-bridge @finamx/extension-sdk @finamx/bridge-protocol react react-dom
 node scripts/check-imports.mjs                  # every @finamx import exists in the published npm packages
 claude plugin validate . && claude plugin validate ./plugins/openplatform
@@ -134,12 +133,11 @@ Last eval run (6 cases, 1 run each): with the plugin 6/6 passed, without it 3/6 
 
 ### Releasing a new version
 
-1. Edit the skills. Edit tooling only in `skills/openplatform-ext-init/assets/template/scripts/finamx/`, then run
-   `node scripts/sync-shared.mjs` (the publish skill keeps identical copies).
+1. Edit the skills. Tooling lives in the `finamx-ext` CLI (`@finamx/extension-sdk`), not in copied scripts.
 2. Bump `version` in `plugins/openplatform/plugin.json`, its `.claude-plugin/`, `.codex-plugin/`, `.cursor-plugin/`
    manifests and in `.claude-plugin/marketplace.json` (validate.mjs checks they match).
 3. Run the checks above; `claude plugin eval` costs about 1–2 USD per run with `--runs 1`.
-4. Push to `main`. CI repeats the checks and runs the extension template inside a real host. Users pick the update
+4. Push to `main`. CI repeats the checks. Users pick the update
    up with the commands in "Get updates".
 
 Never commit tokens, `.env` files or eval results (`plugins/openplatform/evals/results/` is gitignored).

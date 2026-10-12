@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Repository self-check: skill frontmatter (Agent Skills spec), shared script copies, marketplace/plugin manifests
+// Repository self-check: skill frontmatter (Agent Skills spec), marketplace/plugin manifests
 // for Claude Code, Codex and Cursor, secrets and internal references, and links from SKILL.md to bundled files.
 //   node scripts/validate.mjs
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -35,24 +35,12 @@ for (const name of skills) {
   const lines = text.split('\n').length;
   if (lines > 500) err(file, `SKILL.md has ${lines} lines (keep it under 500, move detail to references/)`);
   for (const m of text.matchAll(/`((?:references|resources|scripts|assets)\/[A-Za-z0-9_./-]+)`/g)) {
-    if (m[1].startsWith('scripts/finamx/')) continue; // paths inside the developer's project after copying
     const target = m[1].replace(/\/$/, '');
     if (!existsSync(join(skillsDir, name, target))) err(file, `references a missing file: ${m[1]}`);
   }
 }
 
-// 2. Shared copies must be identical
-const shared = [
-  ['openplatform-ext-init/assets/template/scripts/finamx/publish.mjs', 'openplatform-ext-publish/scripts/publish.mjs'],
-  ['openplatform-ext-init/assets/template/scripts/finamx/check.mjs', 'openplatform-ext-publish/scripts/check.mjs'],
-];
-for (const [a, b] of shared) {
-  const pa = join(skillsDir, a), pb = join(skillsDir, b);
-  if (!existsSync(pa) || !existsSync(pb)) { err(pb, 'shared copy missing'); continue; }
-  if (readFileSync(pa, 'utf8') !== readFileSync(pb, 'utf8')) err(pb, `differs from ${a}; run node scripts/sync-shared.mjs`);
-}
-
-// 3. Manifests for every agent agree on name and version
+// 2. Manifests for every agent agree on name and version
 const claudeMkt = json(join(ROOT, '.claude-plugin/marketplace.json'));
 const codexMkt = json(join(ROOT, '.agents/plugins/marketplace.json'));
 const cursorMkt = json(join(ROOT, '.cursor-plugin/marketplace.json'));
@@ -73,7 +61,7 @@ if (entry && entry.version !== version) err(join(ROOT, '.claude-plugin/marketpla
 if (!(codexMkt.plugins || []).some(p => p.name === 'openplatform' && p.source && p.source.path === './plugins/openplatform')) err(join(ROOT, '.agents/plugins/marketplace.json'), 'plugin entry openplatform missing');
 if (!(cursorMkt.plugins || []).some(p => p.name === 'openplatform' && p.source === 'plugins/openplatform')) err(join(ROOT, '.cursor-plugin/marketplace.json'), 'plugin entry openplatform missing');
 
-// 4. No secrets, no internal references
+// 3. No secrets, no internal references
 const SECRET = [
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private key'],
   [/\bAuthorization:\s*Bearer\s+(?!<|\$|\{|`|\.\.\.|…)[A-Za-z0-9._-]{24,}/i, 'hard-coded bearer token'],
