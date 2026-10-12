@@ -60,22 +60,26 @@ test('guard: the main session and other subagents are never blocked', () => {
   assert.equal(decide({}), null);
 });
 
-test('hooks.json: valid JSON, registers SessionStart, PostToolUse and PreToolUse, every command runs node on a script under ${CLAUDE_PLUGIN_ROOT}/hooks that exists', () => {
+test('hooks.json: top-level "hooks", three events, every hook is the documented shell form node "${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs" with a timeout in seconds and no args', () => {
   const cfg = JSON.parse(fs.readFileSync(path.join(here, '..', 'hooks.json'), 'utf8'));
-  for (const ev of ['SessionStart', 'PostToolUse', 'PreToolUse']) assert.ok(Array.isArray(cfg.hooks[ev]) && cfg.hooks[ev].length, ev);
-  let n = 0;
-  for (const groups of Object.values(cfg.hooks)) {
+  assert.deepEqual(Object.keys(cfg), ['hooks']);
+  assert.deepEqual(Object.keys(cfg.hooks).sort(), ['PostToolUse', 'PreToolUse', 'SessionStart']);
+  const seen = [];
+  for (const [ev, groups] of Object.entries(cfg.hooks)) {
+    assert.ok(Array.isArray(groups) && groups.length, ev);
     for (const g of groups) {
+      assert.equal(typeof g.matcher, 'string');
       for (const h of g.hooks) {
-        n++;
+        assert.deepEqual(Object.keys(h).sort(), ['command', 'timeout', 'type'], 'no exec-form args: ' + JSON.stringify(h));
         assert.equal(h.type, 'command');
-        const script = h.args ? (assert.equal(h.command, 'node'), h.args[0]) : /^node "([^"]+)"$/.exec(h.command)[1];
-        const m = /^\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([a-z-]+\.mjs)$/.exec(script);
-        assert.ok(m, script);
-        assert.ok(fs.existsSync(path.join(here, '..', m[1])));
-        assert.ok(h.timeout > 0);
+        const m = /^node "\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([a-z-]+\.mjs)"$/.exec(h.command);
+        assert.ok(m, h.command);
+        assert.ok(fs.existsSync(path.join(here, '..', m[1])), m[1]);
+        // seconds, not milliseconds
+        assert.ok(Number.isInteger(h.timeout) && h.timeout >= 1 && h.timeout <= 60, String(h.timeout));
+        seen.push(`${ev}:${m[1]}`);
       }
     }
   }
-  assert.equal(n, 3);
+  assert.deepEqual(seen.sort(), ['PostToolUse:post-edit-check.mjs', 'PreToolUse:pre-tool-guard.mjs', 'SessionStart:session-start.mjs']);
 });

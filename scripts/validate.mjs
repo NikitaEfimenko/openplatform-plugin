@@ -100,9 +100,20 @@ else {
   else for (const ev of ['SessionStart', 'PostToolUse', 'PreToolUse']) {
     if (!Array.isArray(hj.hooks[ev]) || !hj.hooks[ev].length) err(hooksFile, `hooks.${ev} must be a non-empty array`);
   }
-  const raw = readFileSync(hooksFile, 'utf8');
-  for (const m of raw.matchAll(/\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([A-Za-z0-9_.-]+\.mjs)/g)) {
-    if (!existsSync(join(hooksDir, m[1]))) err(hooksFile, `points to a missing hook script: ${m[1]}`);
+  // Every hook uses the shell form shown in the Claude Code docs: one command string with the quoted
+  // ${CLAUDE_PLUGIN_ROOT} path and a timeout in seconds. The exec form ("args") is not used.
+  for (const [ev, groups] of Object.entries(hj.hooks || {})) {
+    for (const g of Array.isArray(groups) ? groups : []) {
+      if (typeof g.matcher !== 'string') err(hooksFile, `hooks.${ev}: every group needs a matcher string`);
+      for (const h of Array.isArray(g.hooks) ? g.hooks : []) {
+        if (h.type !== 'command') err(hooksFile, `hooks.${ev}: type must be "command"`);
+        if ('args' in h) err(hooksFile, `hooks.${ev}: exec form ("args") is not used; write "command": "node \\"\${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs\\""`);
+        const m = /^node "\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([A-Za-z0-9_.-]+\.mjs)"$/.exec(String(h.command));
+        if (!m) err(hooksFile, `hooks.${ev}: command must be node "\${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs" (found ${h.command})`);
+        else if (!existsSync(join(hooksDir, m[1]))) err(hooksFile, `points to a missing hook script: ${m[1]}`);
+        if (!Number.isInteger(h.timeout) || h.timeout < 1 || h.timeout > 60) err(hooksFile, `hooks.${ev}: timeout must be 1..60 (seconds)`);
+      }
+    }
   }
 }
 if (existsSync(hooksDir)) {

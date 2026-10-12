@@ -178,7 +178,7 @@ claude plugin validate . && claude plugin validate ./plugins/openplatform   # ma
 claude plugin eval ./plugins/openplatform --runs 3 --no-publish   # with/without-plugin comparison
 ```
 
-Maintainer notes: `claude plugin validate` and `claude plugin eval` need the `claude` CLI and are a manual step before a release; the 2.0.0 branch was checked with `validate.mjs` and the hook tests only.
+Maintainer notes: `claude plugin validate` and `claude plugin eval` need the `claude` CLI and are a manual step before a release. The 2.0.0 branch was checked with `validate.mjs` and the hook tests only: `claude plugin validate` and a real session with `claude --debug` (it shows the hooks firing) have NOT been run on it yet and are required before the release. `hooks/hooks.json` uses the shell form from the Claude Code docs (`"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs\""`, `timeout` in seconds).
 
 ### Releasing a new version
 
