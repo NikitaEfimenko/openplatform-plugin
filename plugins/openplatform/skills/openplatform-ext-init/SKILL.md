@@ -8,8 +8,8 @@ description: >-
   and UI tokens, topics like fdc3.instrument, host methods), settles data, secrets and backend, and verifies the
   build with finamx-ext check, check --host and dev under the platform CSP. Use it whenever someone wants to build,
   convert, fix or check a FinamX / Finam / Open Platform extension or widget, mentions manifest.json surfaces,
-  finamx-ext, a host domain, .finamx, @finamx/extension-sdk, a widget that is blank inside the host, or says "I want
-  to send you an extension". For submitting, versions and moderation use openplatform-ext-publish; for embedding
+  finamx-ext, a host domain, .finamx, a widget that is blank inside the host, or says "I want to send you an
+  extension". For submitting, versions and moderation use openplatform-ext-publish; for embedding
   extensions into a host app use openplatform-host-init.
 ---
 

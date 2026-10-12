@@ -37,14 +37,14 @@ Ask only what you cannot detect. Batches of 2 to 4. Recommended option first. Ac
    - Send the instrument the user picks (`publishes: fdc3.instrument`)
    - Own data for own other widgets: topic `<extensionId>.<name>` with a JSON Schema
    - Other host topics: `finamx.timeframe`, `finamx.filter`, `fdc3.instrumentList`, `fdc3.portfolio`… only if the
-     target host declares them (ask the host owner)
+     target host lists them (pick from the methods and topics in the pulled domain: `finamx-ext domain pull <hostId>`)
 7. **extensionId**: propose `com.<github-user-or-company>.<slug>`; lowercase letters, digits, hyphens, dots.
    Never `com.finamx.*`. It is permanent and owned by the account that submits it first.
 8. **Platforms**: web (recommended) / also ios, android (the widget must then work in mobile web views).
 
 ## Batch 4: build and delivery
 
-9. **Stack**: template, vanilla JS + esbuild (recommended, already compliant) / keep the existing framework.
+9. **Stack**: the generated project, vanilla JS + esbuild (recommended, already compliant) / keep the existing framework.
 10. **Delivery**: artifact upload of `dist/` (recommended) / they already host it and want `embedBundleUrl`
     (platform still freezes a copy at submit) / headless (no UI). Details in the openplatform-ext-publish skill.
 11. **Paid?** Free (recommended to start) / one_time, subscription, freemium, trial_then_paid: monetization is per
@@ -59,6 +59,7 @@ Show this before writing code, and again whenever it changes:
 ```
 Plan
 - Extension: <displayName> (<extensionId>), <shape>
+- Target host: <hostId | templates>   Domain hash: <from .finamx/domain/<hostId>/domain.json>
 - Does: <one sentence>
 - Data: <sources>; backend: <none | what and where>
 - Talks to: subscribes <topics>; publishes <topics>
@@ -66,7 +67,7 @@ Plan
 - External origins (need review): <list or none>
 - Stack: <template | existing framework>   Delivery: <artifact | embedBundleUrl | headless>
 - Portal: <url>   Price: <free | …>
-Next: scaffold -> manifest -> code -> build + host check -> publish
+Next: login -> domain pull -> scaffold -> manifest -> code -> build + check + check --host -> publish
 ```
 
 ## Recommended defaults (when the developer says "as you suggest")
