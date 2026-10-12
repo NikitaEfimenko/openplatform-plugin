@@ -26,10 +26,10 @@ Global options: `--api <url>`, `--token <key>` (legacy, not accepted by `login`)
 | `check` | `--dist`, `--manifest`, `--config`, `--entry`, `--json` | Static checks of manifest and `dist/` (CSP, sandbox, topics, limits, identity) |
 | `check --host [<hostId>]` | as `check` | Run the built widget headless in a local host bridge with the pulled domain of that host. Without an id it uses the only pulled host; with none (or several) it uses a domain built from the manifest where everything is allowed, which proves nothing about a host and says so |
 | `serve` | `--dist`, `--port` (8787), `--manifest`, `--ancestor`, `--strict-csp` | Static server with the platform sandbox CSP. By default `http://localhost` / `http://127.0.0.1` origins of the manifest stay allowed (the platform drops them); `--strict-csp` builds the production CSP |
-| `dev` | `--port`, `--json`, `--headless`, `--open`, `--strict-csp`, `--no-watch`, `--no-poll`, `--manifest`, `--dist` | Local developer host: bento board, host selector, mocks from domain schemas, bus and consent panels, s2s mock. Needs the optional `@finamx/dev-host`. Loopback only, a per-run secret, mocks only; the developer key never reaches the board. Your `watch` script is started automatically with your user's permissions (`--no-watch` skips it) |
-| `publish` | `--manifest`, `--dist`, `--artifact-dir`, `--dry-run`, `--skip-checks` | Submit the manifest (a new version on 409). Packs `./dist` only when the manifest pins no artifact and has no `embedBundleUrl` |
+| `dev` | `--port`, `--json`, `--headless`, `--open`, `--strict-csp`, `--no-watch`, `--no-poll` | Local developer host: bento board, host selector, mocks from domain schemas, bus and consent panels, s2s mock. Needs the optional `@finamx/dev-host`. Loopback only, a per-run secret, mocks only; the developer key never reaches the board. Your `watch` script is started automatically with your user's permissions (`--no-watch` skips it) |
+| `publish` | `--manifest`, `--dist`, `--entry`, `--artifact-dir`, `--artifact-entry`, `--dry-run`, `--skip-checks` | Submit the manifest (a new version on 409). Packs `./dist` only when the manifest pins no artifact and has no `embedBundleUrl` |
 | `status [extensionId]` | `--manifest`, `--json` | Moderation state; the id defaults to the manifest |
-| `context [<hostId>\|templates]` | | (SDK 2.3.0 and newer) print the host context for tools that cannot read files |
+| `context [<hostId>\|templates]` | `--remote`, `--json` | (SDK 2.3.0 and newer) print the host context as Markdown for tools that cannot read files. Reads the pulled copy in `.finamx/domain/`; `--remote` fetches the domain from the portal with the developer key instead and writes nothing |
 
 Template npm scripts: `build` (`node build.mjs`), `watch`, `dev` (`finamx-ext dev`), `check` (`finamx-ext check`),
 `check:host` (`node build.mjs && finamx-ext check --host`), `publish:ext` (`npm run build && finamx-ext publish`),
@@ -44,8 +44,11 @@ Template npm scripts: `build` (`node build.mjs`), `watch`, `dev` (`finamx-ext de
   `{ hostId, domain: 'pulled' | 'synthetic', hostCompatibilityChecked, ok, exitCode, missing[], lines[], skipped, error, hint }`.
   `domain: 'synthetic'` or `hostCompatibilityChecked: false` means no real host was checked.
 - `status --json`: version states and moderation notes.
+- `context --json`: `{ format, target, kind, origin: 'pulled' | 'portal', domainHash, markdown }`.
 
-`init`, `login`, `serve` and `publish` print no JSON.
+`init`, `login`, `serve` and `publish` print no JSON. The table above is the whole CLI. The general
+templates are pulled with `domain pull templates`, and the CLI has no command to request host access, push, link or
+submit.
 
 ## Exit codes
 

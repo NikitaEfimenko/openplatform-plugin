@@ -14,7 +14,7 @@ finamx-ext catalog --json                  # published public extensions
 finamx-ext catalog <extensionId> --json    # one extension in detail
 finamx-ext hosts --json                    # hosts visible to this developer
 finamx-ext domain pull <hostId>            # writes .finamx/domain/<hostId>/
-finamx-ext domain templates                # general templates, no host needed
+finamx-ext domain pull templates           # general templates, no host needed
 ```
 
 ## What to read
@@ -31,7 +31,7 @@ required scopes; read `CONTEXT.md` for the host vocabulary you use to challenge 
 ## Hosts that are not open
 
 - `on_request`: the domain is shown after the host admin approves an access request, which the developer sends from
-  the developer cabinet or the developer API. Plan against `domain templates` meanwhile and mark the affected
+  the developer cabinet or the developer API. Plan against `finamx-ext domain pull templates` meanwhile and mark the affected
   decisions as depending on the real domain.
 - Closed hosts do not appear in `hosts --json`. Do not guess their methods.
 

@@ -54,7 +54,7 @@ Before splitting the work, read the platform as described in `references/catalog
 
 1. `finamx-ext catalog --json` for published extensions and their topics.
 2. `finamx-ext hosts --json` for the hosts the developer can see.
-3. `finamx-ext domain pull <hostId>` (or `domain templates`) for each chosen host.
+3. `finamx-ext domain pull <hostId>` (or `finamx-ext domain pull templates`) for each chosen host.
 
 Present a short table: catalog extensions that could be reused or linked (with their topics), and host methods and
 topics relevant to the idea with their scopes. Without a developer key only general platform rules are available:

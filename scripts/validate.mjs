@@ -41,6 +41,64 @@ for (const name of skills) {
   }
 }
 
+// 1b. Every finamx-ext command and flag named in a skill, an agent or the README exists in the CLI
+// (scripts/finamx-ext-cli.json mirrors the CLI's own flag table).
+const cli = json(join(ROOT, 'scripts/finamx-ext-cli.json'));
+const CLI_COMMANDS = cli.commands || {};
+const CLI_GLOBAL = cli.global || [];
+const CLI_SUB = cli.subcommands || {};
+const isCmd = c => Object.hasOwn(CLI_COMMANDS, c);
+// Checks one command line: tokens after `finamx-ext` (or starting at a known command).
+function checkCli(file, line, tokens) {
+  const rest = tokens.slice();
+  while (rest.length && rest[0].startsWith('--')) { // global flags may come first
+    const g = rest.shift().split('=')[0];
+    if (!CLI_GLOBAL.includes(g)) { err(file, `line ${line}: unknown finamx-ext global flag ${g}`); return; }
+    if ((g === '--api' || g === '--token') && rest.length) rest.shift();
+  }
+  const cmd = rest.shift();
+  if (cmd === undefined || !/^[a-z][a-z-]*$/.test(cmd)) return; // a placeholder such as <command>
+  if (!isCmd(cmd)) { err(file, `line ${line}: finamx-ext has no command "${cmd}" (see scripts/finamx-ext-cli.json)`); return; }
+  if (CLI_SUB[cmd]) {
+    const sub = rest.find(t => !t.startsWith('--'));
+    if (sub !== undefined && /^[a-z][a-z-]*$/.test(sub) && !CLI_SUB[cmd].includes(sub)) err(file, `line ${line}: finamx-ext ${cmd} has no subcommand "${sub}" (only: ${CLI_SUB[cmd].join(', ')})`);
+  }
+  for (const t of rest) {
+    const m = /^(--[a-z][a-z-]*)/.exec(t);
+    if (m && !CLI_COMMANDS[cmd].includes(m[1]) && !CLI_GLOBAL.includes(m[1])) err(file, `line ${line}: finamx-ext ${cmd} has no flag ${m[1]}`);
+  }
+}
+const words = s => s.replace(/\\\|/g, '|').split(/\s+/).filter(Boolean);
+const cutShell = s => s.split(/\s#|&&|\|\||[;>)]|\s\|\s/)[0];
+function checkCliText(file) {
+  const lines = readFileSync(file, 'utf8').split('\n');
+  let fenced = false;
+  lines.forEach((text, i) => {
+    const n = i + 1;
+    if (/^\s*```/.test(text)) { fenced = !fenced; return; }
+    const segments = fenced ? [text] : [...text.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+    for (const seg of segments) {
+      for (const m of seg.matchAll(/(?:\bfinamx-ext|npx(?: (?:-y|--yes|--no-install))* @finamx\/extension-sdk)\s+([^`]*)/g)) checkCli(file, n, words(cutShell(m[1])));
+      // a span that starts with a command name: `domain templates`, `dev --headless`, `check --host <id>`
+      const w = words(seg);
+      if (!fenced && isCmd(w[0]) && w.length > 1 && (CLI_SUB[w[0]] || /^(--|\[|<)/.test(w[1]))) checkCli(file, n, w);
+    }
+    // a table row `| `dev` | `--port`, `--json` | ... |`: the flags of the second cell belong to the command of the first
+    if (!fenced && /^\s*\|/.test(text)) {
+      const cells = text.replace(/\\\|/g, '\u0000').split('|').map(c => c.replace(/\u0000/g, '|').trim());
+      const first = /^`([^`]+)`$/.exec(cells[1] || '');
+      const w = first ? words(first[1].replace(/^finamx-ext\s+/, '')) : [];
+      if (w.length && isCmd(w[0])) {
+        for (const m of (cells[2] || '').matchAll(/`(--[a-z][a-z-]*)[^`]*`/g)) {
+          if (!CLI_COMMANDS[w[0]].includes(m[1]) && !CLI_GLOBAL.includes(m[1])) err(file, `line ${n}: finamx-ext ${w[0]} has no flag ${m[1]}`);
+        }
+      }
+    }
+  });
+}
+const cliTextFiles = [...walk(join(PLUGIN, 'skills')), ...walk(join(PLUGIN, 'agents')), join(ROOT, 'README.md')].filter(f => f.endsWith('.md'));
+for (const f of cliTextFiles) checkCliText(f);
+
 // 2. Manifests for every agent agree on name and version
 const claudeMkt = json(join(ROOT, '.claude-plugin/marketplace.json'));
 const codexMkt = json(join(ROOT, '.agents/plugins/marketplace.json'));
