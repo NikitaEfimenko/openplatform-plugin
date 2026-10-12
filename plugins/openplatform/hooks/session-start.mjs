@@ -100,9 +100,10 @@ function domainPart(root, fs) {
     for (const tp of Array.isArray(d.domain.topics) ? d.domain.topics : []) {
       if (!tp || !ok(tp.topicType)) continue;
       const c = matrix.find((x) => x && x.topicType === tp.topicType);
-      let access = 'denied';
+      // Same words as the SDK context pack: the protocol values are 'public' and 'needsScope'.
+      let access = 'not declared (denied)';
       if (c && c.access === 'public') access = 'public';
-      else if (c && c.access === 'scope') access = typeof c.scope === 'string' && SAFE_NAME.test(c.scope) ? `needsScope \`${c.scope}\`` : 'needsScope';
+      else if (c && c.access === 'needsScope') access = typeof c.scope === 'string' && SAFE_NAME.test(c.scope) ? `needsScope \`${c.scope}\`` : 'needsScope';
       topics.push(`\`${tp.topicType}\` (${access})`);
     }
     const kind = d.kind === 'templates' ? 'templates' : 'host';

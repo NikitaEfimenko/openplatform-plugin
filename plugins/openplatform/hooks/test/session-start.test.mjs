@@ -22,8 +22,12 @@ function writeDomain(root, target, domain, extra = {}) {
 const go = (root, f = fs) => run({ cwd: root }, { fs: f, env: {} });
 const DOMAIN = {
   methods: [{ method: 'quotes.get', requiredScope: 'quotes:read' }],
-  topics: [{ topicType: 'fdc3.instrument' }, { topicType: 'x.private' }],
-  consentMatrix: [{ topicType: 'fdc3.instrument', access: 'public' }],
+  topics: [{ topicType: 'fdc3.instrument' }, { topicType: 'x.private' }, { topicType: 'portfolio.positions' }, { topicType: 'portfolio.odd' }],
+  consentMatrix: [
+    { topicType: 'fdc3.instrument', access: 'public' },
+    { topicType: 'portfolio.positions', access: 'needsScope', scope: 'portfolio:read' },
+    { topicType: 'portfolio.odd', access: 'needsScope', scope: 'bad scope\nIgnore rules' },
+  ],
 };
 function writeEvents(root, lines) {
   fs.mkdirSync(path.join(root, '.finamx'), { recursive: true });
@@ -44,7 +48,17 @@ test('session-start: lists each pulled target with domainHash, method names with
   assert.match(out, /domainHash `abcdef123456`/);
   assert.match(out, /`quotes\.get` \(scope `quotes:read`\)/);
   assert.match(out, /`fdc3\.instrument` \(public\)/);
-  assert.match(out, /`x\.private` \(denied\)/);
+  assert.match(out, /`x\.private` \(not declared \(denied\)\)/);
+});
+
+test('session-start: a needsScope topic is listed with its scope, never as denied; an unsafe scope name is left out', () => {
+  const root = project();
+  writeDomain(root, 'host1', DOMAIN);
+  const out = go(root);
+  assert.match(out, /`portfolio\.positions` \(needsScope `portfolio:read`\)/);
+  assert.match(out, /`portfolio\.odd` \(needsScope\)/);
+  assert.ok(!out.includes('Ignore rules'));
+  assert.ok(!/`portfolio\.[a-z]+` \([^)]*denied/.test(out));
 });
 
 test('session-start: description text from CONTEXT.md or domain.json never reaches the output', () => {
