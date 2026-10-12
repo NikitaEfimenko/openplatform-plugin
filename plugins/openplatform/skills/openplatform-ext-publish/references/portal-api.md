@@ -4,7 +4,7 @@ Base: the portal, e.g. `https://openplatform.changesandbox.ru`. Auth: `Authoriza
 
 | Method | Path | Body | Success |
 |---|---|---|---|
-| POST | `/api/v1/developer/artifacts` | `{ files: [{ path, sha256, contentBase64 }], entry, sha256 }` (build it with the SDK packer, see `publish.mjs`) | 201 |
+| POST | `/api/v1/developer/artifacts` | `{ files: [{ path, sha256, contentBase64 }], entry, sha256 }` (`finamx-ext publish` builds and sends it) | 201 |
 | POST | `/api/v1/developer/extensions` | full manifest | 201/202, status `in_review` |
 | POST | `/api/v1/developer/extensions/{extensionId}/versions` | one version object (the last `versions[]` entry) | 202, `review: pending_version` or `in_review` |
 | GET | `/api/v1/developer/extensions` | — | 200 `{ items: [{ extensionId, displayName, status, moderatorComment, updatedAt }] }` (only this account's) |
@@ -17,11 +17,12 @@ Account endpoints (browser UI is simpler): `/developer/register`, `/developer/da
 ## CI example (GitHub Actions)
 
 ```yaml
-- run: npm ci && npm run build && node scripts/finamx/check.mjs
-- run: node scripts/finamx/publish.mjs
+- run: npm ci && npm run build && npx finamx-ext check && npx finamx-ext publish --api https://openplatform.changesandbox.ru
   env:
     FINAMX_DEV_TOKEN: ${{ secrets.FINAMX_DEV_TOKEN }}
-    FINAMX_API_URL: https://openplatform.changesandbox.ru
 ```
+
+Take the key from the CI secret store and always set `--api` explicitly: a key from the environment is only sent to a
+portal named by `--api` or `FINAMX_API_URL`.
 
 Run the publish step only on tags or manual dispatch: every run with a new version number creates a review request.
