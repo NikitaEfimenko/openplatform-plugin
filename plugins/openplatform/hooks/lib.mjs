@@ -10,7 +10,8 @@ export const SAFE_NAME = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,127}$/;
 const ANSI_RE = /\u001b(?:\[[0-?]*[ -/]*[@-~]|\][^\u0007\u001b]*(?:\u0007|\u001b\\)?|[@-Z\\-_])/g;
 const C1_CSI_RE = /\u009b[0-?]*[ -/]*[@-~]/g;
 const CONTROL_RE = /[\u0000-\u001f\u007f-\u009f]/g;
-const INVISIBLE_RE = /[؜​-‏‪-‮⁠-⁤⁦-⁩﻿]/g;
+// Bidi controls, zero-width and other invisible characters, line/paragraph separators, Unicode tag characters.
+const INVISIBLE_RE = /[\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u2064\u2066-\u206f\ufeff\ufff9-\ufffb\u{e0000}-\u{e007f}]/gu;
 /* eslint-enable no-control-regex */
 
 export function sanitize(value, max = 160) {
@@ -23,6 +24,14 @@ export function sanitize(value, max = 160) {
   s = s.replace(ANSI_RE, '').replace(C1_CSI_RE, '').replace(CONTROL_RE, ' ').replace(INVISIBLE_RE, '');
   const chars = Array.from(s);
   return chars.length > max ? chars.slice(0, Math.max(0, max - 1)).join('') + '…' : s;
+}
+
+/**
+ * Untrusted text as one inert line for a Markdown code span: sanitised, backticks turned into
+ * apostrophes (nothing inside can close the span), runs of spaces collapsed.
+ */
+export function inertLine(value, max = 300) {
+  return sanitize(sanitize(value, max * 4).replace(/`/g, "'").replace(/\s+/g, ' ').trim(), max);
 }
 
 export function readStdinJson(max = 1048576) {

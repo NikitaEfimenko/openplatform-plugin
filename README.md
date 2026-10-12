@@ -98,7 +98,7 @@ boundary. The PreToolUse guard is only a hint on top of it: it stops the two sub
 
 | Hook | What it does |
 |---|---|
-| SessionStart | in an extension project, adds the pulled host domains (names and scopes only) and the latest dev events as bounded context |
+| SessionStart | in an extension project, adds the pulled host domains (names and scopes only) and the dev events of the last 30 minutes as bounded context. Event text comes from widgets and hosts: each event is one line inside a code span with its age, marked as data. That marking is a convention, not a sandbox: a model can still be misled by text it reads |
 | PostToolUse (Write, Edit, MultiEdit) | advisory only: after an edit in an extension project (a `manifest.json` with `versions[].surfaces`) it prints one line telling the agent to run `finamx-ext check --json` (and `check --host <hostId>` when a host domain is pulled). At most one line per two minutes per session and project |
 | PreToolUse (Read, Grep) | best-effort hint: the plugin subagents do not open `.env*` or `credentials.json` by name. Not a security control |
 
