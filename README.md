@@ -161,7 +161,7 @@ scripts/check-imports.mjs           @finamx imports vs published npm packages
 
 ```bash
 node scripts/validate.mjs                       # frontmatter, manifests, hooks, agents, evals, secrets, links
-node --test plugins/openplatform/hooks/test/    # hook unit tests
+node --test "plugins/openplatform/hooks/test/*.test.mjs"    # hook unit tests
 npm i --no-save @finamx/host-bridge @finamx/extension-sdk @finamx/bridge-protocol react react-dom
 node scripts/check-imports.mjs                  # every @finamx import exists in the published npm packages
 claude plugin validate . && claude plugin validate ./plugins/openplatform   # manual: needs the `claude` CLI
