@@ -4,6 +4,7 @@
 //   node scripts/validate.mjs
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const PLUGIN = join(ROOT, 'plugins/openplatform');
@@ -78,9 +79,76 @@ for (const f of walk(ROOT)) {
   for (const re of INTERNAL) if (re.test(text)) err(f, `internal reference: ${re}`);
 }
 
+// 4. Plugin parts added in 2.0: no bundled template, no stale script names, hooks, agents, evals, attribution, changelog
+const MIGRATION_REF = join(PLUGIN, 'skills/openplatform-ext-init/references/migrate-from-scripts.md');
+for (const sk of skills) {
+  const tpl = join(skillsDir, sk, 'assets/template');
+  if (existsSync(tpl)) err(tpl, 'bundled template must not come back (projects use `npx @finamx/extension-sdk init`)');
+}
+for (const f of walk(PLUGIN)) {
+  if (f === MIGRATION_REF || !/\.(md|mjs|js|ts|tsx|json|ya?ml|txt)$/.test(f)) continue;
+  if (readFileSync(f, 'utf8').includes('scripts/finamx')) err(f, 'names scripts/finamx outside the migration reference');
+}
+const hooksDir = join(PLUGIN, 'hooks');
+const hooksFile = join(hooksDir, 'hooks.json');
+let hookScripts = [];
+if (!existsSync(hooksFile)) err(hooksFile, 'missing hooks.json');
+else {
+  const hj = json(hooksFile);
+  if (!hj.hooks || typeof hj.hooks !== 'object') err(hooksFile, 'needs a top-level "hooks" object');
+  else for (const ev of ['SessionStart', 'PostToolUse', 'PreToolUse']) {
+    if (!Array.isArray(hj.hooks[ev]) || !hj.hooks[ev].length) err(hooksFile, `hooks.${ev} must be a non-empty array`);
+  }
+  const raw = readFileSync(hooksFile, 'utf8');
+  for (const m of raw.matchAll(/\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([A-Za-z0-9_.-]+\.mjs)/g)) {
+    if (!existsSync(join(hooksDir, m[1]))) err(hooksFile, `points to a missing hook script: ${m[1]}`);
+  }
+}
+if (existsSync(hooksDir)) {
+  hookScripts = readdirSync(hooksDir).filter(f => f.endsWith('.mjs')).map(f => join(hooksDir, f));
+  for (const f of hookScripts) {
+    const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8', shell: false });
+    if (r.status !== 0) err(f, 'does not parse: ' + (r.stderr || '').split('\n')[0]);
+  }
+}
+const agentsDir = join(PLUGIN, 'agents');
+const agentFiles = existsSync(agentsDir) ? readdirSync(agentsDir).filter(f => f.endsWith('.md')) : [];
+if (!agentFiles.length) err(agentsDir, 'no agents found');
+for (const f of agentFiles) {
+  const file = join(agentsDir, f);
+  const fm = /^---\n([\s\S]*?)\n---\n/.exec(readFileSync(file, 'utf8'));
+  if (!fm) { err(file, 'missing YAML frontmatter'); continue; }
+  const stem = f.replace(/\.md$/, '');
+  const n = /^name:\s*(\S+)/m.exec(fm[1]);
+  if (!n || n[1] !== stem) err(file, `frontmatter name must equal the file stem (${stem})`);
+  if (!/^description:\s*\S/m.test(fm[1]) && !/^description:\s*[>|]-?\s*\n\s+\S/m.test(fm[1])) err(file, 'missing description');
+  if (!/^tools:/m.test(fm[1])) err(file, 'missing tools line');
+}
+const evalsDir = join(PLUGIN, 'evals');
+const evalCases = existsSync(evalsDir) ? readdirSync(evalsDir, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== 'results').map(e => e.name) : [];
+for (const c of evalCases) {
+  const prompt = join(evalsDir, c, 'prompt.md');
+  if (!existsSync(prompt) || !readFileSync(prompt, 'utf8').trim()) err(prompt, 'eval needs a non-empty prompt.md');
+  const gdir = join(evalsDir, c, 'graders');
+  const graders = existsSync(gdir) ? readdirSync(gdir).filter(f => f.endsWith('.md') && readFileSync(join(gdir, f), 'utf8').trim()) : [];
+  if (!graders.length) err(gdir, 'eval needs at least one non-empty graders/*.md');
+}
+const notice = join(PLUGIN, 'skills/openplatform-ext-plan/NOTICE.md');
+if (!existsSync(notice)) err(notice, 'missing attribution NOTICE.md');
+else {
+  const t = readFileSync(notice, 'utf8');
+  if (!t.includes('MIT License') || !t.includes('Matt Pocock')) err(notice, 'must contain the MIT License text and the copyright holder (Matt Pocock)');
+}
+const changelog = join(ROOT, 'CHANGELOG.md');
+if (!existsSync(changelog)) err(changelog, 'missing CHANGELOG.md');
+else {
+  const h = /^## \[(\d+\.\d+\.\d+)\]/m.exec(readFileSync(changelog, 'utf8'));
+  if (!h || h[1] !== version) err(changelog, `first release heading (${h ? h[1] : 'none'}) must equal the manifest version ${version}`);
+}
+
 if (errors.length) {
   for (const e of errors) console.log('✗ ' + e);
   console.log(`\n${errors.length} problem(s)`);
   process.exit(1);
 }
-console.log(`✓ ${skills.length} skills, manifests for Claude Code / Codex / Cursor / Agent Plugins agree (v${version}), no secrets or internal references`);
+console.log(`✓ ${skills.length} skills, ${hookScripts.length} hook scripts, ${agentFiles.length} agents, ${evalCases.length} evals, manifests for Claude Code / Codex / Cursor / Agent Plugins agree (v${version}), no secrets or internal references`);
