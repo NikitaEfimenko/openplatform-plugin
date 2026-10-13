@@ -42,7 +42,7 @@ export async function loadExtensionSession(opts: {
   const session = launchToBridgeSession(launch, opts.userId);
   // 'unverified' / 'approved-by-migration': show a marker, never hide the extension
   const integrityState = (launch as { integrityStatus?: { state?: LaunchIntegrityState } }).integrityStatus?.state;
-  // session.requiresIdentityContext — HMAC identity grant
+  // session.requiresIdentityContext — host-signed platform.identity.v1 grant (ES256, minted on the host server)
   // session.requiresAuthContext — exchangeCode + redeemUrl on session (host-only)
   return { launch, session, integrityState };
 }
