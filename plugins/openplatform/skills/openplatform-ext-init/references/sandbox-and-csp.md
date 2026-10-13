@@ -39,10 +39,12 @@ Sandbox (default, keep it): `allow-scripts allow-same-origin allow-popups allow-
 ## How to check before submitting
 
 ```bash
-npm run build        # check.mjs flags inline scripts/styles, eval, data:, embedSandbox, csp format
-npm run dev          # standalone page with the exact platform CSP; watch the console
-npm run check:host   # real host bridge + platform CSP + your manifest's sandbox
+npm run build                      # bundle
+finamx-ext check                   # flags inline scripts/styles, eval, data:, embedSandbox, csp format
+npm run dev                        # finamx-ext dev: board with the exact platform CSP; watch the csp.violation events
+finamx-ext check --host <hostId>   # real host bridge + platform CSP + your manifest's sandbox + that host's domain
 ```
 
-`dev-server.mjs` builds the policy with `buildSandboxCsp` from `@finamx/bridge-protocol`, the same function the
-platform uses, so a clean console there means a clean console in the host.
+`finamx-ext dev` and `finamx-ext serve` build the policy with the same function the platform uses, so a clean console
+there means a clean console in the host. `serve` keeps `http://localhost` origins of your manifest allowed unless you
+pass `--strict-csp` (the platform drops them); use `--strict-csp` for the final run.

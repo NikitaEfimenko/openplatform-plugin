@@ -50,7 +50,7 @@ Do not "fix" a GAP by editing `@finamx/*` inside a host project; use the workaro
 ## GAP-6 MCP Apps projection is narrow and needs a host-supplied sandbox proxy
 - Verified: `decideProjection` (bridge-protocol `mcp-apps.ts`) only projects published, `hasUi`, non-divkit, artifact-mode, exactly one `.html` file;
   legacy `embedBundleUrl` => text-only (`legacy_embed_bundle`), multi-file => `multi_file_artifact`; cap `MAX_PROJECTED_TOOLS = 20`.
-  A projected single-file artifact is an MCP-Apps-only build (FinamX sandbox CSP forbids inline script, security.md rule 16).
+  A projected single-file artifact is an MCP-Apps-only build (FinamX sandbox CSP forbids inline script).
   `@ai-sdk/react` `experimental_MCPAppRenderer` needs `sandbox.url` = a page YOU host on another origin; the SDK ships none.
   Inside an MCP App the host-bridge/PubSub is NOT available (views talk through app-only `finamx_launch|invoke|action` tools).
 - Workaround: MCP Apps only for hosts that want the standard protocol; keep Launch + host-bridge as the default; always keep the text fallback.

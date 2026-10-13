@@ -1,25 +1,34 @@
 # Convert an existing web app
 
-Goal: a static build in `dist/` that passes `check.mjs` and `host-check.mjs`. Keep the app's framework; add the
-platform pieces from the template.
+Goal: a static build in `dist/` that passes `finamx-ext check` and `finamx-ext check --host <hostId>`. Keep the app's
+framework; add the platform pieces from a freshly generated project.
 
-## 1. Copy the platform pieces
+## 1. Take the platform pieces from a scratch project
 
-From `assets/template/`: `src/boot.js`, `src/host-tokens.js`, `src/config.js`, `scripts/finamx/`, `.env.example`,
-the variable block and the `data-boot` rules from `base.css`, and `manifest.json`. Add to `package.json`:
+Generate a scratch project once and copy from it, then delete it:
+
+```bash
+npx @finamx/extension-sdk init ../ext-scratch --id com.example.scratch --name Scratch --target templates --yes
+```
+
+Take `src/boot.js` and `src/host-tokens.js` from `ext-scratch`, `src/config.js` as a model, the variable block and the
+`data-boot` rules from `base.css`, `manifest.json` as a model, and the `AGENTS.md` and `.gitignore` lines. Add to
+`package.json`:
 
 ```json
-"dependencies": { "@finamx/extension-sdk": "^2.0.0", "@finamx/bridge-protocol": "^2.1.0" },
-"devDependencies": { "@finamx/host-bridge": "^2.1.1", "playwright-core": "^1.50.0", "esbuild": "^0.25.0" },
+"dependencies": { "@finamx/extension-sdk": "^2.2.0", "@finamx/bridge-protocol": "^2.1.0" },
+"devDependencies": { "@finamx/dev-host": "*", "playwright-core": "^1.50.0" },
 "scripts": {
-  "check": "node scripts/finamx/check.mjs",
-  "check:host": "npm run build && node scripts/finamx/host-check.mjs",
-  "publish:ext": "npm run build && node scripts/finamx/publish.mjs",
-  "status:ext": "node scripts/finamx/publish.mjs status"
+  "dev": "finamx-ext dev",
+  "check": "finamx-ext check",
+  "check:host": "<your build command> && finamx-ext check --host",
+  "publish:ext": "<your build command> && finamx-ext publish",
+  "status:ext": "finamx-ext status"
 }
 ```
 
-`host-check.mjs` needs `esbuild` even when the app builds with Vite (it bundles the test host page).
+Then pull the host domain: `finamx-ext login`, `finamx-ext hosts --json`, `finamx-ext domain pull <hostId>` (see
+`host-domain.md`) and set `extensionId` and `SCOPES` from it. Add `.finamx/dev-events.ndjson` to `.gitignore`.
 
 ## 2. Start the app through bootWidget
 
@@ -51,11 +60,11 @@ wrap the app in `.wrap` (or adapt the `data-boot` CSS selectors).
 **React (CRA, Next)**
 - Next: `output: 'export'` (static export), `images.unoptimized: true`, `assetPrefix: './'`; no server components,
   API routes or middleware in the widget (move those to a separate backend). Next injects inline scripts for
-  hydration data: prefer Vite for widgets; if staying on Next, verify with `check.mjs` and `host-check.mjs`.
+  hydration data: prefer Vite for widgets; if staying on Next, verify with `finamx-ext check` and `finamx-ext check --host <hostId>`.
 - Production builds only: dev builds use `eval` for source maps.
 
 **Charts and heavy libraries**
-- Check for `new Function`/`eval` in the bundle (`check.mjs` does it). Common offenders: template compilers,
+- Check for `new Function`/`eval` in the bundle (`finamx-ext check` does it). Common offenders: template compilers,
   some expression evaluators, older chart builds. Pick a CSP-safe build or another library.
 - WebAssembly cannot run (no `wasm-unsafe-eval`).
 
@@ -73,7 +82,7 @@ wrap the app in `.wrap` (or adapt the `data-boot` CSS selectors).
 ## 5. Verify
 
 ```bash
-npm run build && npm run check && npm run check:host
+npm run build && finamx-ext check && finamx-ext check --host <hostId>
 ```
 
-Point `check.mjs` at the right folders if they differ: `--dist build --manifest manifest.json --config src/config.js`.
+Point `check` at the right folders if they differ: `--dist build --manifest manifest.json --config src/config.js`.

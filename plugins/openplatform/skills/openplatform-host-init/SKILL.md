@@ -64,6 +64,7 @@ CMS must serve endpoints listed in `resources/platform-endpoints.md`.
 2. Issue key → save as `FINAMX_HOST_TOKEN` / `NEXT_PUBLIC_FINAMX_HOST_TOKEN` (gitignore)
 3. Save **extension-host-availability** or catalog/`extension.list` stays empty for this tenant
 4. **Fill `Hosts.domain` by inserting templates** (admin: Hosts → your host → "Template insert" panel; dry run first, host's own entries win on conflict) — `resources/host-templates.md`. Templates: `fdc3@2.2`, `finamx-fibo@1`, `host-ui-basics@1` (`ui.toast`), `sandbox-kit@1` (`repl.js`, `repl.python`, `sandbox.server`), `canvas-board@1`. **An empty domain allows nothing** — no legacy defaults. CLI/JSON alternative: `resources/cli-host-domain.md`, `resources/host-domain.json`.
+   Extension developers (not host owners) read the domain with `finamx-ext hosts` and `finamx-ext domain pull <hostId>`; what they see depends on the host's ontology visibility: `open` shows the domain to any registered developer, `on_request` shows it only after the host admin approves an access request (`ONTOLOGY_ACCESS_REQUIRED` until then).
 
 ### 4. Launch + embed
 

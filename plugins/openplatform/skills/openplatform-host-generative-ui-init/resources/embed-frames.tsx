@@ -138,7 +138,7 @@ function LaunchedFrame(props: CommonProps & { session: BridgeSessionConfig; laun
         ref={iframeRef}
         src={frameProps.src}
         title={session.extensionId}
-        sandbox={frameProps.sandbox} // from Launch embedPolicy, verbatim; do not widen (security.md rule 11)
+        sandbox={frameProps.sandbox} // from Launch embedPolicy, verbatim; do not widen
         allow={frameProps.allow} // '' = deny-all
         style={frameProps.style}
       />

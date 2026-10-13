@@ -75,10 +75,47 @@ otherwise the agent sees two versions with different rules.
 
 | Skill | Use it to |
 |---|---|
-| `openplatform-ext-init` | build a new extension or convert an existing web app: interview with recommended answers, template (vanilla JS + esbuild), manifest, bridge, host theme and UI tokens, topics, host methods, data/secrets/backend, checks inside a real host |
-| `openplatform-ext-publish` | get a publisher token, choose the delivery mode (artifact upload, `embedBundleUrl`, headless), submit, release new versions, read review status, fix every portal error |
+| `openplatform-ext-plan` | turn an idea into a PRD for one extension or a set of extensions: numbered question rounds, what already exists in the catalog and in the chosen hosts, a map of tickets |
+| `openplatform-ext-init` | build a new extension or convert an existing web app: interview with recommended answers, `npx @finamx/extension-sdk init`, manifest, bridge, host theme and UI tokens, topics and host methods from the pulled host domain, data/secrets/backend, checks inside a real host |
+| `openplatform-ext-publish` | get a publisher token, choose the delivery mode (artifact upload, `embedBundleUrl`, headless), `finamx-ext publish` and `status`, release new versions, fix every portal error |
 | `openplatform-host-init` | embed extensions into your own host app: launch, host bridge, capability router, pub/sub broker, host domain, consent |
 | `openplatform-host-generative-ui-init` | let a chat or agent in your host show extensions and agent-built UI through the platform MCP, also in external clients (Claude.ai, ChatGPT) as MCP Apps |
+
+## Hooks and agents (Claude Code)
+
+The plugin ships three hooks and two subagents.
+
+The hooks read local files and print text. They start no process, run nothing from the project and make no network
+call (`scripts/validate.mjs` fails on `child_process`, a network module or `fetch(` in `hooks/`), and they never read
+`.env` or credentials. The agent runs `finamx-ext` itself, under the normal permission prompts.
+
+The subagents are read-only by construction: their tool list is `Read, Grep, Glob`, so they have no shell and no
+network and cannot run `finamx-ext`, edit a file or publish. The main session runs the CLI (`finamx-ext check --json`,
+`check --host <id> --json`, `domain pull --check --json`, `hosts --json`; the last two call the portal with the
+developer key, and the usual permission prompts apply) and hands the output to the reviewer. That tool list is the
+boundary. The PreToolUse guard is only a hint on top of it: it stops the two subagents from opening `.env*` and
+`credentials.json` by name through Read or Grep, and a broad search or an unusual glob can get past it.
+
+| Hook | What it does |
+|---|---|
+| SessionStart | in an extension project, adds the pulled host domains (names and scopes only) and the dev events of the last 30 minutes as bounded context. Event text comes from widgets and hosts: each event is one line inside a code span with its age, marked as data. That marking is a convention, not a sandbox: a model can still be misled by text it reads |
+| PostToolUse (Write, Edit, MultiEdit) | advisory only: after an edit in an extension project (a `manifest.json` with `versions[].surfaces`) it prints one line telling the agent to run `finamx-ext check --json` (and `check --host <hostId>` when a host domain is pulled). At most one line per two minutes per session and project |
+| PreToolUse (Read, Grep) | best-effort hint: the plugin subagents do not open `.env*` or `credentials.json` by name. Not a security control |
+
+| Agent | What it does |
+|---|---|
+| `openplatform-reviewer` | read-only (Read, Grep, Glob) pre-publish review of the manifest, CSP, UI tokens and scopes against the pulled host domain and the CLI output the main session collected: ready / not ready |
+| `openplatform-dev-watcher` | read-only (Read, Grep, Glob): reads `.finamx/dev-events.ndjson` from `finamx-ext dev` and proposes fixes for schema, scope and CSP errors |
+
+## Codex, Cursor and other agents
+
+Hooks and agents are Claude Code features. In other agents the same steps run as text: follow
+`references/agent-loop.md` in `openplatform-ext-init` (pull the domain, edit, run `finamx-ext check`, read the dev events).
+
+## Context for tools without a terminal (v0, Databutton)
+
+Run `finamx-ext context <hostId>` (SDK 2.3.0+) and paste the output into the tool, or use the button
+"Скопировать контекст" in the developer cabinet.
 
 ## Try it
 
@@ -88,18 +125,27 @@ In an empty folder, ask your agent:
 I want to build a FinamX widget that shows news for the instrument selected in neighbouring widgets.
 ```
 
-The agent asks a few questions (each with a recommended option), shows a plan, scaffolds the template, and runs:
+The agent asks a few questions (each with a recommended option), writes a plan and runs:
 
 ```bash
-npm run build          # bundle + platform checks (CSP, sandbox, manifest, topics, artifact limits)
-npm run check:host     # the widget inside a real @finamx/host-bridge host: handshake, CSP, host tokens
-npm run publish:ext    # upload dist/ as an artifact and submit for review (token in .env)
-npm run status:ext
+npx @finamx/extension-sdk init      # scaffold the project
+finamx-ext domain pull <hostId>     # the host's real topics, methods and scopes
+npm run dev                         # local dev host with an event log
+finamx-ext check --host <hostId>    # manifest, CSP, topics and scopes against the host domain
+finamx-ext publish                  # upload and submit for review (token in .env)
 ```
+
+## Upgrading from 1.x
+
+- Remove project copies of the old skills: `.claude/skills/openplatform-*` and `.agents/skills/openplatform-*`.
+- Projects that copied the old check and publish scripts follow the migration reference in
+  `openplatform-ext-init` (`references/migrate-from-scripts.md`).
+- Projects created before SDK 2.3.0: add `.finamx/dev-events.ndjson` to `.gitignore`.
+- Requirements: `@finamx/extension-sdk` >= 2.2.0, Node 20+. See `CHANGELOG.md`.
 
 ## The easy path in one paragraph
 
-A static widget built with the template, no backend, data from neighbour widgets (`fdc3.instrument`) and host
+A static widget built from the SDK scaffold, no backend, data from neighbour widgets (`fdc3.instrument`) and host
 methods, uploaded as an artifact: no hosting of your own, the platform runs exactly the files you uploaded, the
 moderator reviews scopes and any external domains, then enables the extension for hosts. Anything that needs your
 own secret moves to a small backend that the widget calls with the platform auth context.
@@ -113,36 +159,41 @@ own secret moves to a small backend that the widget calls with the platform auth
 plugins/openplatform/
   plugin.json                       Agent Plugins 1.0 manifest
   .claude-plugin/ .codex-plugin/ .cursor-plugin/   per-agent plugin manifests
-  skills/<name>/SKILL.md            the skills (+ references/, scripts/, assets/)
+  skills/<name>/SKILL.md            the skills (+ references/, resources/)
+  hooks/                            Claude Code hooks (hooks.json, *.mjs, test/)
+  agents/                           subagents (openplatform-reviewer, openplatform-dev-watcher)
   evals/<case>/                     eval cases for `claude plugin eval`
 scripts/validate.mjs                repository self-check
 scripts/check-imports.mjs           @finamx imports vs published npm packages
-scripts/sync-shared.mjs             keeps shared tool copies identical
 ```
 
 ## Development
 
 ```bash
-node scripts/validate.mjs                       # frontmatter, manifests, shared copies, secrets, links, no outside references
+node scripts/validate.mjs                       # frontmatter, manifests, hooks, agents, evals, secrets, links
+node --test "plugins/openplatform/hooks/test/*.test.mjs"    # hook unit tests
 npm i --no-save @finamx/host-bridge @finamx/extension-sdk @finamx/bridge-protocol react react-dom
 node scripts/check-imports.mjs                  # every @finamx import exists in the published npm packages
-claude plugin validate . && claude plugin validate ./plugins/openplatform
+claude plugin validate . && claude plugin validate ./plugins/openplatform   # manual: needs the `claude` CLI
 claude plugin eval ./plugins/openplatform --runs 3 --no-publish   # with/without-plugin comparison
 ```
 
-Last eval run (6 cases, 1 run each): with the plugin 6/6 passed, without it 3/6 (mean delta +0.5).
+Maintainer notes: `claude plugin validate` and `claude plugin eval` need the `claude` CLI and are a manual step before a release. The 2.0.0 branch was checked with `validate.mjs` and the hook tests only: `claude plugin validate` and a real session with `claude --debug` (it shows the hooks firing) have NOT been run on it yet and are required before the release. `hooks/hooks.json` uses the shell form from the Claude Code docs (`"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs\""`, `timeout` in seconds).
 
 ### Releasing a new version
 
-1. Edit the skills. Edit tooling only in `skills/openplatform-ext-init/assets/template/scripts/finamx/`, then run
-   `node scripts/sync-shared.mjs` (the publish skill keeps identical copies).
+1. Edit the skills. Tooling lives in the `finamx-ext` CLI (`@finamx/extension-sdk`), not in copied scripts.
 2. Bump `version` in `plugins/openplatform/plugin.json`, its `.claude-plugin/`, `.codex-plugin/`, `.cursor-plugin/`
    manifests and in `.claude-plugin/marketplace.json` (validate.mjs checks they match).
-3. Run the checks above; `claude plugin eval` costs about 1–2 USD per run with `--runs 1`.
-4. Push to `main`. CI repeats the checks and runs the extension template inside a real host. Users pick the update
+3. Add a `CHANGELOG.md` entry and run the checks above; `claude plugin eval` costs about 1–2 USD per run with `--runs 1`.
+4. Owner review of the branch, then push to `main`. CI repeats the checks. Users pick the update
    up with the commands in "Get updates".
 
 Never commit tokens, `.env` files or eval results (`plugins/openplatform/evals/results/` is gitignored).
+
+## Credits
+
+The `openplatform-ext-plan` approach is adapted from mattpocock/skills (MIT); see `plugins/openplatform/skills/openplatform-ext-plan/NOTICE.md`.
 
 ## License
 
@@ -156,6 +207,12 @@ MIT
 от пустой папки до расширения в хостах FinamX: задаёт вопросы с рекомендуемыми ответами, выбирает самый простой
 путь (статический виджет из шаблона, загрузка сборки артефактом, без своего хостинга и бэкенда), проверяет
 виджет под настоящими CSP и мостом хоста, отправляет его на портал и объясняет любые ошибки модерации и портала.
+
+В версии 2.0: скилл `openplatform-ext-plan` (PRD для набора расширений), хуки и агенты Claude Code
+(контекст хоста при старте, напоминание запустить `finamx-ext check` после правок, read-only ревьюер перед публикацией; хуки ничего не запускают), шаблон и скрипты
+заменены на `npx @finamx/extension-sdk init` и `finamx-ext`. Обновление с 1.x: удалите копии
+`.claude/skills/openplatform-*` и `.agents/skills/openplatform-*`, см. «Upgrading from 1.x». Контекст для v0 и
+Databutton: `finamx-ext context <hostId>` (SDK 2.3.0+) или кнопка «Скопировать контекст» в кабинете.
 
 Установка: команды выше. Начать можно с фразы агенту:
 «Хочу сделать виджет для открытой платформы FinamX, который …».

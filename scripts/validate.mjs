@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Repository self-check: skill frontmatter (Agent Skills spec), shared script copies, marketplace/plugin manifests
+// Repository self-check: skill frontmatter (Agent Skills spec), marketplace/plugin manifests
 // for Claude Code, Codex and Cursor, secrets and internal references, and links from SKILL.md to bundled files.
 //   node scripts/validate.mjs
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const PLUGIN = join(ROOT, 'plugins/openplatform');
@@ -35,24 +36,70 @@ for (const name of skills) {
   const lines = text.split('\n').length;
   if (lines > 500) err(file, `SKILL.md has ${lines} lines (keep it under 500, move detail to references/)`);
   for (const m of text.matchAll(/`((?:references|resources|scripts|assets)\/[A-Za-z0-9_./-]+)`/g)) {
-    if (m[1].startsWith('scripts/finamx/')) continue; // paths inside the developer's project after copying
     const target = m[1].replace(/\/$/, '');
     if (!existsSync(join(skillsDir, name, target))) err(file, `references a missing file: ${m[1]}`);
   }
 }
 
-// 2. Shared copies must be identical
-const shared = [
-  ['openplatform-ext-init/assets/template/scripts/finamx/publish.mjs', 'openplatform-ext-publish/scripts/publish.mjs'],
-  ['openplatform-ext-init/assets/template/scripts/finamx/check.mjs', 'openplatform-ext-publish/scripts/check.mjs'],
-];
-for (const [a, b] of shared) {
-  const pa = join(skillsDir, a), pb = join(skillsDir, b);
-  if (!existsSync(pa) || !existsSync(pb)) { err(pb, 'shared copy missing'); continue; }
-  if (readFileSync(pa, 'utf8') !== readFileSync(pb, 'utf8')) err(pb, `differs from ${a}; run node scripts/sync-shared.mjs`);
+// 1b. Every finamx-ext command and flag named in a skill, an agent or the README exists in the CLI
+// (scripts/finamx-ext-cli.json mirrors the CLI's own flag table).
+const cli = json(join(ROOT, 'scripts/finamx-ext-cli.json'));
+const CLI_COMMANDS = cli.commands || {};
+const CLI_GLOBAL = cli.global || [];
+const CLI_SUB = cli.subcommands || {};
+const isCmd = c => Object.hasOwn(CLI_COMMANDS, c);
+// Checks one command line: tokens after `finamx-ext` (or starting at a known command).
+function checkCli(file, line, tokens) {
+  const rest = tokens.slice();
+  while (rest.length && rest[0].startsWith('--')) { // global flags may come first
+    const g = rest.shift().split('=')[0];
+    if (!CLI_GLOBAL.includes(g)) { err(file, `line ${line}: unknown finamx-ext global flag ${g}`); return; }
+    if ((g === '--api' || g === '--token') && rest.length) rest.shift();
+  }
+  const cmd = rest.shift();
+  if (cmd === undefined || !/^[a-z][a-z-]*$/.test(cmd)) return; // a placeholder such as <command>
+  if (!isCmd(cmd)) { err(file, `line ${line}: finamx-ext has no command "${cmd}" (see scripts/finamx-ext-cli.json)`); return; }
+  if (CLI_SUB[cmd]) {
+    const sub = rest.find(t => !t.startsWith('--'));
+    if (sub !== undefined && /^[a-z][a-z-]*$/.test(sub) && !CLI_SUB[cmd].includes(sub)) err(file, `line ${line}: finamx-ext ${cmd} has no subcommand "${sub}" (only: ${CLI_SUB[cmd].join(', ')})`);
+  }
+  for (const t of rest) {
+    const m = /^(--[a-z][a-z-]*)/.exec(t);
+    if (m && !CLI_COMMANDS[cmd].includes(m[1]) && !CLI_GLOBAL.includes(m[1])) err(file, `line ${line}: finamx-ext ${cmd} has no flag ${m[1]}`);
+  }
 }
+const words = s => s.replace(/\\\|/g, '|').split(/\s+/).filter(Boolean);
+const cutShell = s => s.split(/\s#|&&|\|\||[;>)]|\s\|\s/)[0];
+function checkCliText(file) {
+  const lines = readFileSync(file, 'utf8').split('\n');
+  let fenced = false;
+  lines.forEach((text, i) => {
+    const n = i + 1;
+    if (/^\s*```/.test(text)) { fenced = !fenced; return; }
+    const segments = fenced ? [text] : [...text.matchAll(/`([^`]+)`/g)].map(m => m[1]);
+    for (const seg of segments) {
+      for (const m of seg.matchAll(/(?:\bfinamx-ext|npx(?: (?:-y|--yes|--no-install))* @finamx\/extension-sdk)\s+([^`]*)/g)) checkCli(file, n, words(cutShell(m[1])));
+      // a span that starts with a command name: `domain templates`, `dev --headless`, `check --host <id>`
+      const w = words(seg);
+      if (!fenced && isCmd(w[0]) && w.length > 1 && (CLI_SUB[w[0]] || /^(--|\[|<)/.test(w[1]))) checkCli(file, n, w);
+    }
+    // a table row `| `dev` | `--port`, `--json` | ... |`: the flags of the second cell belong to the command of the first
+    if (!fenced && /^\s*\|/.test(text)) {
+      const cells = text.replace(/\\\|/g, '\u0000').split('|').map(c => c.replace(/\u0000/g, '|').trim());
+      const first = /^`([^`]+)`$/.exec(cells[1] || '');
+      const w = first ? words(first[1].replace(/^finamx-ext\s+/, '')) : [];
+      if (w.length && isCmd(w[0])) {
+        for (const m of (cells[2] || '').matchAll(/`(--[a-z][a-z-]*)[^`]*`/g)) {
+          if (!CLI_COMMANDS[w[0]].includes(m[1]) && !CLI_GLOBAL.includes(m[1])) err(file, `line ${n}: finamx-ext ${w[0]} has no flag ${m[1]}`);
+        }
+      }
+    }
+  });
+}
+const cliTextFiles = [...walk(join(PLUGIN, 'skills')), ...walk(join(PLUGIN, 'agents')), join(ROOT, 'README.md')].filter(f => f.endsWith('.md'));
+for (const f of cliTextFiles) checkCliText(f);
 
-// 3. Manifests for every agent agree on name and version
+// 2. Manifests for every agent agree on name and version
 const claudeMkt = json(join(ROOT, '.claude-plugin/marketplace.json'));
 const codexMkt = json(join(ROOT, '.agents/plugins/marketplace.json'));
 const cursorMkt = json(join(ROOT, '.cursor-plugin/marketplace.json'));
@@ -73,7 +120,7 @@ if (entry && entry.version !== version) err(join(ROOT, '.claude-plugin/marketpla
 if (!(codexMkt.plugins || []).some(p => p.name === 'openplatform' && p.source && p.source.path === './plugins/openplatform')) err(join(ROOT, '.agents/plugins/marketplace.json'), 'plugin entry openplatform missing');
 if (!(cursorMkt.plugins || []).some(p => p.name === 'openplatform' && p.source === 'plugins/openplatform')) err(join(ROOT, '.cursor-plugin/marketplace.json'), 'plugin entry openplatform missing');
 
-// 4. No secrets, no internal references
+// 3. No secrets, no internal references
 const SECRET = [
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private key'],
   [/\bAuthorization:\s*Bearer\s+(?!<|\$|\{|`|\.\.\.|…)[A-Za-z0-9._-]{24,}/i, 'hard-coded bearer token'],
@@ -90,9 +137,98 @@ for (const f of walk(ROOT)) {
   for (const re of INTERNAL) if (re.test(text)) err(f, `internal reference: ${re}`);
 }
 
+// 4. Plugin parts added in 2.0: no bundled template, no stale script names, hooks, agents, evals, attribution, changelog
+const MIGRATION_REF = join(PLUGIN, 'skills/openplatform-ext-init/references/migrate-from-scripts.md');
+for (const sk of skills) {
+  const tpl = join(skillsDir, sk, 'assets/template');
+  if (existsSync(tpl)) err(tpl, 'bundled template must not come back (projects use `npx @finamx/extension-sdk init`)');
+}
+for (const f of walk(PLUGIN)) {
+  if (f === MIGRATION_REF || !/\.(md|mjs|js|ts|tsx|json|ya?ml|txt)$/.test(f)) continue;
+  if (readFileSync(f, 'utf8').includes('scripts/finamx')) err(f, 'names scripts/finamx outside the migration reference');
+}
+const hooksDir = join(PLUGIN, 'hooks');
+const hooksFile = join(hooksDir, 'hooks.json');
+let hookScripts = [];
+const HOOK_IMPORTS = ['node:fs', 'node:path', 'node:url', 'node:os', 'node:crypto', './lib.mjs'];
+if (!existsSync(hooksFile)) err(hooksFile, 'missing hooks.json');
+else {
+  const hj = json(hooksFile);
+  if (!hj.hooks || typeof hj.hooks !== 'object') err(hooksFile, 'needs a top-level "hooks" object');
+  else for (const ev of ['SessionStart', 'PostToolUse', 'PreToolUse']) {
+    if (!Array.isArray(hj.hooks[ev]) || !hj.hooks[ev].length) err(hooksFile, `hooks.${ev} must be a non-empty array`);
+  }
+  // Every hook uses the shell form shown in the Claude Code docs: one command string with the quoted
+  // ${CLAUDE_PLUGIN_ROOT} path and a timeout in seconds. The exec form ("args") is not used.
+  for (const [ev, groups] of Object.entries(hj.hooks || {})) {
+    for (const g of Array.isArray(groups) ? groups : []) {
+      if (typeof g.matcher !== 'string') err(hooksFile, `hooks.${ev}: every group needs a matcher string`);
+      for (const h of Array.isArray(g.hooks) ? g.hooks : []) {
+        if (h.type !== 'command') err(hooksFile, `hooks.${ev}: type must be "command"`);
+        if ('args' in h) err(hooksFile, `hooks.${ev}: exec form ("args") is not used; write "command": "node \\"\${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs\\""`);
+        const m = /^node "\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([A-Za-z0-9_.-]+\.mjs)"$/.exec(String(h.command));
+        if (!m) err(hooksFile, `hooks.${ev}: command must be node "\${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs" (found ${h.command})`);
+        else if (!existsSync(join(hooksDir, m[1]))) err(hooksFile, `points to a missing hook script: ${m[1]}`);
+        if (!Number.isInteger(h.timeout) || h.timeout < 1 || h.timeout > 60) err(hooksFile, `hooks.${ev}: timeout must be 1..60 (seconds)`);
+      }
+    }
+  }
+}
+if (existsSync(hooksDir)) {
+  hookScripts = readdirSync(hooksDir).filter(f => f.endsWith('.mjs')).map(f => join(hooksDir, f));
+  for (const f of hookScripts) {
+    const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8', shell: false });
+    if (r.status !== 0) err(f, 'does not parse: ' + (r.stderr || '').split('\n')[0]);
+    // Hooks are advisory: they read local files and print text. They start no process and open no socket.
+    const src = readFileSync(f, 'utf8');
+    if (/child_process|\b(spawn|spawnSync|execFile|execFileSync|execSync|fork)\b|\bexec\(/.test(src)) err(f, 'hooks must not start a process (no child_process, spawn or exec)');
+    if (/node:(net|http|https|http2|tls|dgram|dns)\b|\bfetch\(|\bimport\(/.test(src)) err(f, 'hooks must not use the network or a dynamic import');
+    for (const m of src.matchAll(/from\s+['"]([^'"]+)['"]/g)) {
+      if (!HOOK_IMPORTS.includes(m[1])) err(f, `hooks may import only ${HOOK_IMPORTS.join(', ')} (found ${m[1]})`);
+    }
+  }
+}
+const agentsDir = join(PLUGIN, 'agents');
+const agentFiles = existsSync(agentsDir) ? readdirSync(agentsDir).filter(f => f.endsWith('.md')) : [];
+if (!agentFiles.length) err(agentsDir, 'no agents found');
+for (const f of agentFiles) {
+  const file = join(agentsDir, f);
+  const fm = /^---\n([\s\S]*?)\n---\n/.exec(readFileSync(file, 'utf8'));
+  if (!fm) { err(file, 'missing YAML frontmatter'); continue; }
+  const stem = f.replace(/\.md$/, '');
+  const n = /^name:\s*(\S+)/m.exec(fm[1]);
+  if (!n || n[1] !== stem) err(file, `frontmatter name must equal the file stem (${stem})`);
+  if (!/^description:\s*\S/m.test(fm[1]) && !/^description:\s*[>|]-?\s*\n\s+\S/m.test(fm[1])) err(file, 'missing description');
+  const tools = /^tools:\s*(.*)$/m.exec(fm[1]);
+  if (!tools) err(file, 'missing tools line');
+  // The subagents are read-only by construction: this tool list is the boundary, the PreToolUse guard is only a hint.
+  else if (tools[1].split(',').map(t => t.trim()).sort().join(',') !== 'Glob,Grep,Read') err(file, `tools must be exactly "Read, Grep, Glob" (found: ${tools[1]})`);
+}
+const evalsDir = join(PLUGIN, 'evals');
+const evalCases = existsSync(evalsDir) ? readdirSync(evalsDir, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== 'results').map(e => e.name) : [];
+for (const c of evalCases) {
+  const prompt = join(evalsDir, c, 'prompt.md');
+  if (!existsSync(prompt) || !readFileSync(prompt, 'utf8').trim()) err(prompt, 'eval needs a non-empty prompt.md');
+  const gdir = join(evalsDir, c, 'graders');
+  const graders = existsSync(gdir) ? readdirSync(gdir).filter(f => f.endsWith('.md') && readFileSync(join(gdir, f), 'utf8').trim()) : [];
+  if (!graders.length) err(gdir, 'eval needs at least one non-empty graders/*.md');
+}
+const notice = join(PLUGIN, 'skills/openplatform-ext-plan/NOTICE.md');
+if (!existsSync(notice)) err(notice, 'missing attribution NOTICE.md');
+else {
+  const t = readFileSync(notice, 'utf8');
+  if (!t.includes('MIT License') || !t.includes('Matt Pocock')) err(notice, 'must contain the MIT License text and the copyright holder (Matt Pocock)');
+}
+const changelog = join(ROOT, 'CHANGELOG.md');
+if (!existsSync(changelog)) err(changelog, 'missing CHANGELOG.md');
+else {
+  const h = /^## \[(\d+\.\d+\.\d+)\]/m.exec(readFileSync(changelog, 'utf8'));
+  if (!h || h[1] !== version) err(changelog, `first release heading (${h ? h[1] : 'none'}) must equal the manifest version ${version}`);
+}
+
 if (errors.length) {
   for (const e of errors) console.log('✗ ' + e);
   console.log(`\n${errors.length} problem(s)`);
   process.exit(1);
 }
-console.log(`✓ ${skills.length} skills, manifests for Claude Code / Codex / Cursor / Agent Plugins agree (v${version}), no secrets or internal references`);
+console.log(`✓ ${skills.length} skills, ${hookScripts.length} hook scripts, ${agentFiles.length} agents, ${evalCases.length} evals, manifests for Claude Code / Codex / Cursor / Agent Plugins agree (v${version}), no secrets or internal references`);

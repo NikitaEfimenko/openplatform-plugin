@@ -22,6 +22,10 @@ Endpoint behind the panel: `POST /api/hosts/<id>/domain/insert-template` (admin 
 
 A host created before templates existed has an empty domain and allows nothing until templates are inserted. Insert them in the admin panel as above, or ask the platform team.
 
+## Who reads the domain
+
+Extension developers read a host's domain with `finamx-ext hosts` and `finamx-ext domain pull <hostId>` (subject to the host's ontology visibility: `open` or `on_request`). Keep the domain complete and its topic schemas valid, because developers generate manifests against it.
+
 ## Scopes
 
 Scopes are free text declared by the host in `methods[].requiredScope` and `consentMatrix[].needsScope`. Format: `a.b`, lowercase, dot separated, at most 64 chars. Extensions request them in `capabilitiesRequested`; the user grants a subset at install.

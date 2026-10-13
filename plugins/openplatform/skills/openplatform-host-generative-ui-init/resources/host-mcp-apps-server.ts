@@ -97,7 +97,7 @@ export function createHostMcpAppsServer(opts: {
       return { isError: true, content: [{ type: 'text', text: `Tool ${req.params.name} is not available here` }] };
     }
     // present_* from the model and finamx_* from the view both land here; the platform authorises them
-    // (token + grants), visibility is only a hint to the client (security.md rule 16).
+    // (token + grants), visibility is only a hint to the client.
     return (await opts.platform.callTool({ name: req.params.name, arguments: req.params.arguments ?? {} })) as CallToolResult;
   });
 

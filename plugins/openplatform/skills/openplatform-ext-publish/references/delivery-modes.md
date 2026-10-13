@@ -3,9 +3,11 @@
 ## Artifact upload (recommended)
 
 ```
-npm run build  ->  dist/  ->  pack (files + sha256)  ->  POST /api/v1/developer/artifacts (201)
-                          ->  manifest: versions[-1].surfaces.ui.artifact = { sha256, entry }
-                          ->  POST /api/v1/developer/extensions   (or …/<id>/versions)
+npm run build  ->  finamx-ext publish (pack + upload + submit)
+   dist/  ->  pack (files + sha256)  ->  POST /api/v1/developer/artifacts (201)
+          ->  manifest: versions[-1].surfaces.ui.artifact = { sha256, entry }
+          ->  POST /api/v1/developer/extensions   (or …/<id>/versions)
+   --artifact-dir <dir> replaces a pinned artifact with a fresh upload of that directory
 ```
 
 - The platform stores the files by content hash and serves them from an isolated origin per version, with the
@@ -56,5 +58,5 @@ No `surfaces.ui`: only the manifest is submitted (topics with `delivery: ["s2s"]
 |---|---|
 | `surfaces.ui.artifact { sha256, entry }` in the version (moderator: "Full version JSON") | artifact (uploaded or imported) |
 | `surfaces.ui.embedBundleUrl` still present after submit | live link |
-| Publish output `artifact: N files, sha256 …` / `✓ artifact uploaded` | upload |
+| `finamx-ext publish` output `artifact: N files, sha256 …` / `✓ artifact uploaded` | upload |
 | Review error mentions `bundle https://…` | live link |

@@ -6,7 +6,7 @@
 |---|---|
 | `in_review` | first submission (or a version of a not-yet-published extension) waits for a moderator |
 | `published` | live; a newer version may wait as `pending_version` while this one keeps running |
-| `rejected` | see `moderatorComment` (`publish.mjs status` prints it); fix and submit a new version |
+| `rejected` | see `moderatorComment` (`finamx-ext status` prints it); fix and submit a new version |
 | `suspended` | blocked by moderators; contact them |
 
 ## What the moderator does
@@ -47,7 +47,10 @@ Delivery: artifact upload, sha256 <…>
 ## Checking without the admin panel
 
 ```bash
-node scripts/finamx/publish.mjs status      # status + moderator comment
+npx finamx-ext status      # status + moderator comment
+npx finamx-ext hosts --json   # where the extension works: works / missing / needs_access per host
 ```
+
+When a host changed its domain, run `npx finamx-ext domain pull --check`, then pull again and re-check.
 
 The host catalog shows the latest approved version once the extension is enabled for that host.
