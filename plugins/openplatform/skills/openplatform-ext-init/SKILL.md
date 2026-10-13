@@ -181,7 +181,11 @@ Rules that matter most:
 Only when the interview says so: `references/data-and-backend.md` (decision table: browser-only, host methods,
 user-entered tokens, your own backend with platform auth context, user-bound server-to-server access to host data,
 MCP). The short version: a browser bundle is public and reviewed, so any secret that is yours lives on a server you
-run; the widget proves who it is to that server with the platform auth context, never with a shared key.
+run; the widget proves where it runs to that server with the platform auth context (a launch attestation, no user,
+not SSO), never with a shared key. A trusted host user id comes only from the host-signed `platform.identity.v1`
+(`requiresIdentityContext`, verified with `verifyHostIdentity`); own accounts use the extension's own OIDC. There is
+no shared-secret (HMAC) identity. Ask "what must the backend trust?" and route with the matrix in
+`references/auth-context.md`.
 
 ## Step 6: verify (do not skip)
 
@@ -251,7 +255,7 @@ new versions, errors). If that skill is not available, the short path is: `finam
 | `references/runtime.md` | bridge API, topics, host methods and scopes, tokens, fixtures |
 | `references/sandbox-and-csp.md` | what the platform CSP and sandbox block and how to work with it |
 | `references/data-and-backend.md` | where data comes from, secrets, backend, auth context, s2s, MCP |
-| `references/auth-context.md` | platform auth context and identity grants in detail |
+| `references/auth-context.md` | mechanism matrix: auth context, host identity (ES256), s2s, own OIDC |
 | `references/user-bound-s2s.md` | backend access to private host data for one user |
 | `references/convert-existing-app.md` | turning a Vite/React/Next/static app into an extension |
 | `references/migrate-from-scripts.md` | moving an old plugin-template project onto finamx-ext |

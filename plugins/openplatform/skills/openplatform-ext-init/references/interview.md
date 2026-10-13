@@ -28,9 +28,19 @@ Ask only what you cannot detect. Batches of 2 to 4. Recommended option first. Ac
 
    If the API has no CORS, it is effectively the "needs a backend" row (a tiny proxy).
 
-7. **Does it need to know who the user is?** No (recommended unless required) / yes, a verified platform claim
-   (`hostBridge.requiresAuthContext` + `auth.context`) / yes, identity context for partner apps
-   (`requiresIdentityContext`). See `auth-context.md`.
+7. **What does the backend need to trust?** Route the answer, do not ask about flags first (matrix in `auth-context.md`):
+
+   | Answer | Choose |
+   |---|---|
+   | Nothing, ordinary widget (recommended) | no auth flag |
+   | Host data for the user (portfolio, orders) | `invoke` with granted scopes, or user-bound s2s |
+   | Proof that the launch came from the platform (not a user) | `hostBridge.requiresAuthContext` + `auth.context` → `platform.auth_context.v1` |
+   | The host's trusted user id on my backend | `requiresIdentityContext` → `platform.identity.v1` (host-signed ES256, verified with `verifyHostIdentity`) |
+   | My own accounts / login / SSO | the extension's own OIDC / backend popup, not a flag |
+
+   Auth-context is not SSO: it carries no user unless the extension opts in (`hostBridge.requiresUserKey` or a
+   declared `surfaces.ui.state`), and then only the pairwise handle `uh_`, never the host user id. Identity `sub` is the host's user id, not an account of the
+   extension. There is no shared-secret (HMAC) option.
 
 ## Batch 3: neighbours and identity
 
@@ -67,7 +77,7 @@ Plan
 - Usage: <board how-to | none>
 - Data: <sources>; backend: <none | what and where>
 - Talks to: subscribes <topics>; publishes <topics>
-- Scopes: <list>   Auth: <none | auth context | identity>
+- Scopes: <list>   Auth: <none | auth context | host identity | own OIDC>
 - External origins (need review): <list or none>
 - Stack: <template | existing framework>   Delivery: <artifact | embedBundleUrl | headless>
 - Portal: <url>   Price: <free | …>

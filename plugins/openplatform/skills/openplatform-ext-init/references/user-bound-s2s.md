@@ -11,6 +11,8 @@ The host-only verifier **refuses** user tokens and the user verifier refuses hos
 
 Claims of `platform.s2s.user.v1` (ES256, signed by CMS, TTL 120 s): `iss` cms, `aud`, `sub`, `jti`, `host` (hostId), `ext` (extensionId), `scope` (space separated), `dir` (`push` | `pull`).
 
+`platform.s2s.user.v1` `sub` is not `platform.identity.v1` `sub` and is not an extension account id: push `sub` is a pairwise handle, pull `sub` is a host bucket. It carries one scope for 120 s and is not a login; never use it to identify or link an account (see `auth-context.md`).
+
 ## Push receiver (host -> your backend)
 
 The host calls your stored webhook (`surfaces.topics.s2sChannels.webhook.url`). `aud` is your `extensionId`, `sub` is a pairwise handle (`uh_...`, stable per user and host, not the host's user id).

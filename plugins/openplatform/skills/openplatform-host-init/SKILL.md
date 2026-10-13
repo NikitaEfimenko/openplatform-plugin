@@ -26,7 +26,7 @@ Sibling: `openplatform-ext-init` (extension side).
 4. hostId / slug для tenant? (например com.acme.host)
 5. Какие шаблоны вставить в domain? (FDC3 2.2 / FinamX finance / Host UI basics / Sandbox kit / Canvas / board / свой JSON) И какие методы host реально обслуживает сам?
 6. Embed path: UI only / + MCP agent tools / + board multi-widget pubsub / + MCP Apps во внешних чатах (Claude.ai, ChatGPT)
-7. Grants: identity HMAC / auth-context exchange / оба / нет
+7. Grants: нет / identity (`platform.identity.v1`, host подписывает ES256, нужен приватный ключ host и публичный kid+JWK в админке host) / auth-context (exchange, без `sub`) / оба. Матрица и ротация: `resources/grants.md`
 8. Availability: какие extensionId разрешить этому host?
 9. (если MCP Apps) Есть свой OAuth 2.1 и MCP-endpoint для продакшена, или пока только тест через UAT на sandbox-хосте?
 ```
@@ -85,7 +85,7 @@ The board agent prompt (the rules it reads when it calls `board_addWidget`) carr
 - Serve declared methods yourself (browser router + server handler) and publish host data: `resources/host-served-methods.md`
 - UI tokens: partial merge over defaults (`resources/ui-tokens.ts`)
 - Shared `PubSubBroker` singleton across embeds — `resources/pubsub-rules.md`
-- Dual grants: `resources/grants.md`
+- Grants (identity ES256 + auth-context, key setup, rotation): `resources/grants.md`
 - Never put auth fields on pubsub payloads
 
 ### 6. MCP (optional)
@@ -161,7 +161,7 @@ user-bound `platform.s2s.user.v1` token minted by CMS after consent: `resources/
 | `resources/host-served-methods.md` | registerMethod, invoke handler, publishTopic, s2s pull/push |
 | `resources/cli-host-domain.md` | declare and read back the host domain |
 | `resources/pubsub-rules.md` | Broker / FDC3 / what never goes on the bus |
-| `resources/grants.md` | HMAC + exchange |
+| `resources/grants.md` | Mechanism matrix, identity (ES256) + exchange grants, key setup and rotation |
 | `resources/mcp-catalog-tools.md` | MCP tool table |
 | `resources/platform-urls.md` | Local URLs |
 | `resources/mcp-apps.md` | MCP Apps for external chat clients: projection, prerequisites, test vs production |

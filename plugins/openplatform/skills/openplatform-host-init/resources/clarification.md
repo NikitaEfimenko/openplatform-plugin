@@ -12,5 +12,10 @@ Ask unanswered items only.
    - Single embed page
    - Multi-widget board + PubSubBroker
    - MCP/agent tools calling catalog
-8. **Grants** — none / identity / auth-context / both.
+8. **Grants** (matrix in `grants.md`)
+   - Ordinary widgets → none.
+   - Host data for the user → `invoke` / user-bound s2s, no grant.
+   - Launch attestation → auth-context (`platform.auth_context.v1`, no `sub`, not SSO).
+   - Trusted host user id for an extension backend → identity (`platform.identity.v1`, host-signed ES256; needs a host private key in the secret store and the public kid + JWK registered in the host admin Keys area).
+   - Extension-owned accounts → the extension's own OIDC, not a grant.
 9. **userId source** — real end-user id for launch (never ship POC fallback to prod).
