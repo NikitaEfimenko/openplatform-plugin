@@ -49,6 +49,15 @@ What to take from it:
 The generated `types.d.ts` types method params and results and topic payloads. Use them (JSDoc `@type` or a
 TypeScript import) instead of retyping shapes, so a changed domain shows up as a type or check error.
 
+## Method request and response bodies
+
+A method may declare `requestBody` and `responseBody` as `{ "$ref": "#/topics/<topicType>" }`, pointing at a topic of the same
+domain (never a remote ref). `domain.json` and `CONTEXT.md` show them (`requestBody` / `responseBody` lines); the generated
+`types.d.ts` aliases the method's params and result to the topic payload type, and the mocks follow the topic schemas. Call such a
+method through `createDomainClient(bridge, domain)` (see `runtime.md`): the params are checked against the request topic schema
+before sending, the result against the response topic schema. A method with only an inline `paramsSchema` / `resultSchema` is
+descriptive: the same types are generated but nothing is enforced.
+
 ## Mocks and overrides
 
 `domain pull` generates one mock per method and topic from the schemas. `finamx-ext dev` and standalone runs use them

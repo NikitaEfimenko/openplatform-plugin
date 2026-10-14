@@ -157,7 +157,10 @@ Rules and examples: `references/manifest.md`. The essentials:
 Rules that matter most:
 
 - Start through `bootWidget()`; inside a host never fall back to the mock.
-- Call only methods and topics present in the pulled domain; use the generated `types.d.ts` for params and results.
+- Call only methods and topics present in the pulled domain; use the generated `types.d.ts` for params and results, and
+  call host methods through `createDomainClient(bridge, domain)` so params and results are checked against the topic schemas.
+- The host may send `host:container` (container size); handle it with `bridge.ui.onContainerSize` / `applyContainerSize` and render
+  sensibly when it never arrives.
 - Style only through CSS variables; the host theme and tokens must apply to every element (backgrounds, text,
   borders, accents, radius, font). A widget that ignores the host palette looks broken in the host.
 - The platform CSP forbids inline scripts and styles, `eval`/`new Function`, WebAssembly, `data:` URLs (unless

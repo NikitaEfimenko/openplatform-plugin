@@ -40,6 +40,8 @@ confirms before anyone runs `finamx-ext publish`.
 | 13 | Host | the run was against the pulled host, not a self-declared domain | `finamx-ext check --host <hostId> --json`: `host.domain` is `pulled` and `hostCompatibilityChecked` is true |
 | 14 | Topics | own topics are `<extensionId>.<name>` with a JSON Schema; host topics have no schema and exist in the pulled domain | `surfaces.topics` vs `domain.json` |
 | 15 | Secrets | no keys or tokens in `dist/`, topics or logs; `.env` is gitignored | grep `dist/` and `src/` for key-like strings; read `.gitignore` and find the `.env` line (do not open `.env`) |
+| 16 | Methods | host methods go through `createDomainClient` with the pulled `domain.json`, not raw `bridge.platform.invoke` | grep `createDomainClient` and `bridge.platform.invoke` in `src/` |
+| 17 | Layout | the widget works with and without `host:container` (no size: sensible default; breakpoints declared in `surfaces.ui.layout` match the CSS) | read `src/` for `onContainerSize` / `data-finamx-breakpoint` and `surfaces.ui.layout` |
 
 Common failure codes and their fixes are in the `openplatform-ext-publish` skill (`references/errors.md`).
 
