@@ -23,7 +23,7 @@ finamx-ext domain pull templates           # general templates, no host needed
 |---|---|
 | `catalog --json` | `extensionId`, `displayName`, topics (`publishes` / `subscribes`), `integrityStatus`, `hasArtifact` |
 | `hosts --json` | `hostId`, `displayName`, `ontologyVisibility` (`open` or `on_request`), `access` state, `compatibility` |
-| `domain pull` | `CONTEXT.md` (host vocabulary and methods in prose), `domain.json` (topics, methods, scopes), `types.d.ts` |
+| `domain pull` | `CONTEXT.md` (host vocabulary and methods in prose, with each method's `requestBody` / `responseBody` topic refs), `domain.json` (topics, methods, scopes), `types.d.ts` (a ref'd method is typed as its topic payload) |
 
 Output of `domain pull` lands in `.finamx/domain/<target>/`. Read `domain.json` for exact method names, topics and
 required scopes; read `CONTEXT.md` for the host vocabulary you use to challenge fuzzy terms.

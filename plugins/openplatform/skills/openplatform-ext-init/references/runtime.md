@@ -47,12 +47,23 @@ Common host topics. They are available only where the host domain lists them: ch
 ## Host methods and scopes
 
 ```js
+import { createDomainClient, DomainMethodError } from '@finamx/extension-sdk';
+import domain from '../.finamx/domain/<hostId>/domain.json'; // the pulled domain, bundled with the widget
+
+// In TypeScript: createDomainClient<DomainMethods>(bridge, domain) with DomainMethods from .finamx/domain/<hostId>/types.d.ts
+const host = createDomainClient(bridge, domain);
 try {
-  const quote = await bridge.platform.invoke('market.quote', { symbol: 'SBER@MISX' });
+  const quote = await host.invoke('market.quote', { symbol: 'SBER@MISX' });
 } catch (err) {
-  showFailure(err); // denied scope or method -> "No access" state
+  if (err instanceof DomainMethodError) showFailure(err.code); // METHOD_PARAMS_INVALID / METHOD_RESULT_INVALID / METHOD_NOT_IN_DOMAIN
+  else showFailure(err); // denied scope or method -> "No access" state
 }
 ```
+
+`createDomainClient` is the way to call host methods. When the host declares a method with `requestBody` / `responseBody` (refs to
+topic schemas of the same domain), the params are checked against the request topic schema **before** anything is sent and the result
+against the response topic schema after it arrives; `types.d.ts` aliases such a method's params and result to the topic payload types.
+`bridge.platform.invoke(method, params)` is the untyped call underneath; use it only for a method the pulled domain does not declare.
 
 - Methods and their scopes are **declared by each host**; there is no global list. Request the scope in
   `capabilitiesRequested`, the user grants a subset at install. A call without a granted scope, or to a method the
@@ -67,6 +78,26 @@ try {
 
 `bootWidget` calls `bridge.ui.autoResize()` inside a host: the frame follows your content height. For a fixed
 height use `bridge.ui.resize({ height })`.
+
+## Container size and breakpoints
+
+The host may send the size of your container (`host:container`, `{ width, height }` in px, also in `hostContext.container`).
+Everything below is optional: a host that sends nothing leaves the size `undefined`, and the widget must render sensibly then.
+
+```js
+import { applyContainerSize } from '@finamx/extension-sdk';
+
+bridge.ui.containerSize();                 // { width, height, breakpoint? } or undefined
+bridge.ui.onContainerSize(({ width, height, breakpoint }) => relayout(width, height, breakpoint));
+applyContainerSize(bridge);                // sets --finamx-container-width|height and data-finamx-breakpoint on <html>
+bridge.ui.setSizePreference({ width: 480, height: 360 }); // tell the host the size you would like (runtime)
+```
+
+- Declare breakpoints and a static preferred size in the manifest, `versions[].surfaces.ui.layout` (external-embed only):
+  `breakpoints: [{ name: 'compact', maxWidth: 599 }, { name: 'wide', minWidth: 600 }]` (name `^[a-z][a-z0-9.-]{0,63}$`, 1 to 16 entries,
+  each with at least one bound) and `preferredSize: { width?, height?, aspectRatio? }` (`W:H`). The active breakpoint is the first
+  declared one whose bounds all hold.
+- Style by `[data-finamx-breakpoint="compact"]` or the CSS variables instead of `100vh` or `window.innerWidth`.
 
 ## Theme and UI tokens (required)
 
