@@ -1,7 +1,7 @@
 {
-  "comment": "Commands and flags of the finamx-ext CLI (@finamx/extension-sdk 2.4.0). scripts/validate.mjs fails when a skill, agent or the README names a command or flag that is not listed here. Keep it equal to the CLI's own flag table when the SDK changes.",
-  "sdk": "2.4.0",
-  "global": ["--api", "--token", "--json", "--help", "--version"],
+  "comment": "Commands and flags of the finamx-ext CLI (@finamx/extension-sdk 3.2.0). scripts/validate.mjs fails when a skill, agent or the README names a command or flag that is not listed here. Keep it equal to the CLI's own flag table when the SDK changes.",
+  "sdk": "3.2.0",
+  "global": ["--api", "--token", "--publisher", "--json", "--help", "--version"],
   "subcommands": { "domain": ["pull"] },
   "commands": {
     "init": ["--id", "--name", "--target", "--template", "--yes", "--force"],
@@ -15,6 +15,7 @@
     "dev": ["--port", "--no-watch", "--strict-csp", "--open", "--headless", "--no-poll"],
     "publish": ["--manifest", "--dist", "--entry", "--artifact-dir", "--artifact-entry", "--dry-run", "--skip-checks"],
     "status": ["--manifest"],
+    "publishers": [],
     "push": ["--manifest", "--dist", "--entry", "--dry-run", "--skip-checks"],
     "link": ["--list"],
     "unlink": []
