@@ -74,6 +74,12 @@ Copy patterns from:
 - `resources/use-extension-embed.tsx`
 - `resources/capability-router.ts`
 
+### 4b. Usage note after placement
+
+A catalog item may include `usage` (plain text, optional): how to use that widget on the board. When this host places the extension — from the catalog, or when the board agent calls `board_addWidget` — and `usage` is non-empty, create one note with that exact text next to the widget, once per space and extension. Do not invent the text. Missing or empty `usage` means no note. Placing the same extension on that space again does not create a second note.
+
+The board agent prompt (the rules it reads when it calls `board_addWidget`) carries the same rule: after a successful place, if that extension's `usage` is non-empty, call `board_createNote` once with that text.
+
 ### 5. Tokens / pubsub / grants
 
 - Serve declared methods yourself (browser router + server handler) and publish host data: `resources/host-served-methods.md`

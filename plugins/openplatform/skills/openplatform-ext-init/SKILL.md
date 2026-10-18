@@ -60,11 +60,17 @@ Also note: Node version (needs 20+), package manager, whether Google Chrome is i
 
 Use `references/interview.md` for the full bank and branching. The core questions, with what to recommend:
 
-1. **What should it do?** One or two sentences; this becomes `displayName`, `description`, `summary`.
-2. **What kind?** Widget in the host page (recommended, most extensions) / headless reaction to host topics /
+1. **What should it do?** One or two sentences. This becomes `displayName` only. Do not write `description` or
+   `summary` from this answer.
+2. **Store text.** Ask: «Текст для витрины. Его увидят люди в каталоге. Предложи 1–2 предложения и жди правку или да».
+   Propose 1–2 sentences, then wait. Do not write `description` until the author edits the text or says «да».
+   `summary` is a shortened copy of that confirmed text, not a new sentence. Full gate: `references/interview.md`.
+3. **Board how-to.** Ask: «Как этим пользоваться на доске? 3–6 коротких предложений. Это поле usage, из него хост сделает заметку рядом с виджетом».
+   An empty answer means do not write `usage` (no note on the board).
+4. **What kind?** Widget in the host page (recommended, most extensions) / headless reaction to host topics /
    MCP tools for agents.
-3. **Which host?** Pick from `finamx-ext hosts` (Step 1b). With no host chosen yet, start from `templates`.
-4. **Where does its data come from?**
+5. **Which host?** Pick from `finamx-ext hosts` (Step 1b). With no host chosen yet, start from `templates`.
+6. **Where does its data come from?**
    - nothing external, only what neighbour widgets send (recommended when it fits);
    - data the host offers (quotes, portfolio, profile) through host methods: no server, needs scopes. Offer only
      the methods listed in the pulled domain and request exactly their `requiredScope` values;
@@ -72,13 +78,13 @@ Use `references/interview.md` for the full bank and branching. The core question
    - the user's own account at a third party (the user enters their token in the widget);
    - anything that needs **your** secret (API key, client secret, database): needs a backend you run.
    See `references/data-and-backend.md`; the last option is the only one that needs a server.
-5. **Does it talk to other widgets?** Usually: listen to `fdc3.instrument` (the selected instrument) and/or send it.
+7. **Does it talk to other widgets?** Usually: listen to `fdc3.instrument` (the selected instrument) and/or send it.
    Offer only topics the pulled domain lists. Own topics are named `<extensionId>.<name>` and need a JSON Schema.
-6. **Identity:** `extensionId` as `com.<you or company>.<slug>` (lowercase, dots, hyphens). Suggest one.
+8. **Identity:** `extensionId` as `com.<you or company>.<slug>` (lowercase, dots, hyphens). Suggest one.
    `com.finamx.*` is reserved.
-7. **Stack:** the generated project (recommended: vanilla JS + esbuild, already passes all checks) or keep their
+9. **Stack:** the generated project (recommended: vanilla JS + esbuild, already passes all checks) or keep their
    framework (React/Vite works; see the conversion guide).
-8. **Delivery:** upload the build as an artifact (recommended: no hosting, what you upload is exactly what runs).
+10. **Delivery:** upload the build as an artifact (recommended: no hosting, what you upload is exactly what runs).
    Alternatives and when they make sense are in the `openplatform-ext-publish` skill; mention only if asked.
 
 Then show the plan card and get a yes.
@@ -112,7 +118,9 @@ cd <dir> && npm install && npm run build
 ```
 
 Then set the identity in **both** places: `manifest.json` (`extensionId`, `displayName`, `description`, `summary`,
-`capabilitiesRequested`, topics) and `src/config.js` (`EXTENSION_ID`, `SCOPES` equal to `capabilitiesRequested`).
+`usage` only when the author answered the board how-to, `capabilitiesRequested`, topics) and `src/config.js`
+(`EXTENSION_ID`, `SCOPES` equal to `capabilitiesRequested`). `description` is the confirmed store text.
+`summary` copies that text, shortened to 280 characters. Leave `usage` out when the how-to answer was empty.
 The generated widget is working: it listens to and sends `fdc3.instrument`, applies the host theme and tokens, and
 shows failure states instead of a blank page.
 
@@ -222,6 +230,7 @@ new versions, errors). If that skill is not available, the short path is: `finam
 
 ## Checklist before handing off
 
+- [ ] `description` is the store text the author confirmed; `summary` is a shortened copy of it; `usage` is set only when they answered the board how-to
 - [ ] `extensionId` and scopes identical in `manifest.json` and `src/config.js`
 - [ ] every method and topic used appears in the pulled domain; scopes equal their `requiredScope`
 - [ ] last `versions[]` entry is the highest semver, has a `changelog`

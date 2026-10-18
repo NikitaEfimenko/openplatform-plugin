@@ -9,8 +9,9 @@ Tools submit the **last** entry of `versions[]`; for a brand-new extension the w
 |---|---|
 | `extensionId` | `^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$`, e.g. `com.acme.price-alerts`. Permanent, owned by the first submitter's account. `com.finamx.*` is reserved |
 | `displayName` | catalog name |
-| `description` | catalog text |
-| `summary` | optional, ≤ 280 chars; used in catalog cards and as the tool description for agents |
+| `description` | catalog text. Write it only after the author confirms the store-text question (`references/interview.md`). Do not copy the first "what it does" answer |
+| `summary` | optional, ≤ 280 chars; a shortened copy of the confirmed `description`, not a separate sentence. Used in catalog cards and as the tool description for agents |
+| `usage` | optional plain text, ≤ 1200 chars. How to use the widget on the board. Omit the key when the author left that question empty. A host that places the widget creates one note from this text |
 | `iconUrl` | optional absolute URL |
 | `platformSupport` | at least one of `web`, `ios`, `android` |
 | `visibility` | `public` (default), `unlisted`, `private` |
