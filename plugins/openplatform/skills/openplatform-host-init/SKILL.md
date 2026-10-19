@@ -26,7 +26,7 @@ Sibling: `openplatform-ext-init` (extension side).
 4. hostId / slug для tenant? (например com.acme.host)
 5. Какие шаблоны вставить в domain? (FDC3 2.2 / FinamX finance / Host UI basics / Sandbox kit / Canvas / board / свой JSON) И какие методы host реально обслуживает сам?
 6. Embed path: UI only / + MCP agent tools / + board multi-widget pubsub / + MCP Apps во внешних чатах (Claude.ai, ChatGPT)
-7. Grants: нет / identity (`platform.identity.v1`, host подписывает ES256, нужен приватный ключ host и публичный kid+JWK в админке host) / auth-context (exchange, без `sub`) / оба. Матрица и ротация: `resources/grants.md`
+7. Grants: нет / identity (`platform.identity.v1`, host подписывает ES256, нужен приватный ключ host и публичный kid+JWK в админке host) / auth-context (exchange; `sub` = парный `uh_` только если расширение включило `requiresUserKey` или объявило `surfaces.ui.state`) / оба. Матрица и ротация: `resources/grants.md`
 8. Availability: какие extensionId разрешить этому host?
 9. (если MCP Apps) Есть свой OAuth 2.1 и MCP-endpoint для продакшена, или пока только тест через UAT на sandbox-хосте?
 ```

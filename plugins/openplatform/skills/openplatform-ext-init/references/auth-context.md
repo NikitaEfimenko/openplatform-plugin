@@ -9,7 +9,7 @@ Pick by what the extension needs. Ordinary widgets need none of them (no auth fl
 | Mechanism | Reaches iframe? | Contains a user? | Who signs | Who verifies | Never use it for |
 |-----------|-----------------|------------------|-----------|--------------|------------------|
 | Launch sessionJwt | No. Host only. | Host session subject, not an extension claim | Platform (Launch) | Platform on invoke | Iframe, extension backend, URL, logs |
-| `platform.auth_context.v1` | Exchange code via `widget.identity.grant`, then the JWT after redeem | No `sub` | Platform | Extension via `verifyPlatformClaim` | User identity, SSO, upstream API access |
+| `platform.auth_context.v1` | Exchange code via `widget.identity.grant`, then the JWT after redeem | No `sub` unless opted in; then the pairwise handle `uh_`, never the host user id | Platform | Extension via `verifyPlatformClaim` | User identity, SSO, upstream API access |
 | `platform.identity.v1` | Compact JWT via `widget.identity.grant`, profile `platform.identity.v1`, field `identityToken` | Yes. `sub` is the host-local user id | Host, ES256, private key only on the host | Extension backend via `verifyHostIdentity` (host JWKS + signed authorized-issuers) | SSO, account linking, s2s data access, another extension's `aud` |
 | `platform.s2s.v1` | No | No `sub` | Platform | Extension webhook verifier | User identity, iframe |
 | `platform.s2s.user.v1` | No | Pairwise handle (push) or host bucket (pull), 120 s, one scope | Platform | Extension (push) or host via `verifyUserBoundS2s` (pull) | Replacing identity, widening scope, iframe |
@@ -50,7 +50,8 @@ const token = ctx.mode === 'exchange' ? ctx.redeem.token : null; // send as Auth
 ```
 
 - The host sends a `widget.identity.grant`; `resolveAuthContext` waits for it, redeems the exchange code and
-  verifies the claim (`platform.auth_context.v1`, short-lived, issuer `cms`, no `sub`). It never returns a user.
+  verifies the claim (`platform.auth_context.v1`, short-lived, issuer `cms`). It never returns a host user id.
+  The claim carries `host`, a CMS-bound `instanceId` and an opaque Publisher tag `pub`; `sub` only on opt-in (below).
 - The host may re-issue the grant without a reload: on a 401 from your backend, call `resolveAuthContext` again once.
 - Do not block the UI on it: start the widget, show "connecting" for the data that needs the backend.
 
@@ -63,7 +64,25 @@ const claims = await verifyPlatformClaim(token, 'platform.auth_context.v1', 'com
 });
 ```
 
-`expectedProfile` and `expectedAud` are mandatory: without them any platform token would pass.
+`expectedProfile` is mandatory, and so is `expectedAud` or `expectedPublisher` (SDK 3.6.0+): without either, any
+platform token would pass. Pin the Publisher tag (cabinet, team page or `finamx-ext publishers`) so another
+Publisher cannot replay its own token:
+
+```js
+// shared backend for several widgets of one Publisher
+const claims = await verifyPlatformClaim(token, 'platform.auth_context.v1', undefined, {
+  jwksUrl, expectedPublisher: process.env.FINAMX_PUBLISHER_TAG, // other tag: PUBLISHER_MISMATCH
+});
+```
+
+### Opt-in user key (`sub`)
+
+`sub` is present only when the manifest sets `hostBridge.requiresUserKey: true`, or automatically when the published
+version declares `surfaces.ui.state`. It is the pairwise handle `uh_` (per host and extension), not the host user id and
+not an identity. Key server-side state only by `authContextStateKey(claims)` = `(host, sub, instanceId)`, never by
+values from the widget's request body. Opt in only together with `@finamx/extension-sdk` 3.5.0 or newer: older
+verifiers reject any `sub` (`SUB_FORBIDDEN`). Handle `consent/revoked` with
+`createS2sWebhookHandler({ onConsentRevoked })` and delete the `(host, handle)` data.
 
 It proves "this request comes from your extension running in a platform session". It is not SSO, not a user identity
 and not an access token for any upstream API.

@@ -2,6 +2,23 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.1.0] — 2026-10-19
+
+### Changed
+
+- Identity: host identity is only the host-signed ES256 `platform.identity.v1` (`signHostIdentity` /
+  `verifyHostIdentity` / `resolveHostIdentity`); the shared-secret HMAC grant is gone from every skill. ext-init asks
+  "what must the backend trust?" and routes with one matrix (no flag / invoke or s2s / auth-context / identity / own
+  OIDC); host-init documents key setup and the 300 s rotation overlap. New eval `identity-matrix`.
+- `platform.auth_context.v1` is no longer described as always sub-less: it carries `host`, `instanceId`, the Publisher
+  tag `pub`, and `sub` = pairwise `uh_` only on opt-in (`hostBridge.requiresUserKey` or `surfaces.ui.state`, SDK
+  3.5.0+). `expectedAud` or `expectedPublisher` is mandatory in the verifier (SDK 3.6.0).
+
+### Added
+
+- Runtime reference: instance state (`bridge.state`), `meta.relation`, `acceptFrom`, `onPublishRejected`
+  (`SENDER_NOT_ACCEPTED`), last-value cache vs state.
+
 ## [2.0.0] — 2026-10-12 (not published)
 
 ### Breaking

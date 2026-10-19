@@ -23,6 +23,7 @@ async function start({ bridge, mode, toast, showFailure }) { /* mode: 'host' | '
 const off = bridge.context.subscribe('fdc3.instrument', (payload, meta) => {
   // payload: { type: 'fdc3.instrument', id: { ticker, mic?, isin? }, name? }
   // meta.fromCache: true when this is the last value replayed to a late subscriber
+  // meta.relation: 'self' (same Publisher) | 'other' on events from extensions; absent on host events
 });
 bridge.context.publish('fdc3.instrument', { type: 'fdc3.instrument', id: { ticker: 'SBER', mic: 'MISX' } });
 ```
@@ -32,6 +33,28 @@ bridge.context.publish('fdc3.instrument', { type: 'fdc3.instrument', id: { ticke
   check that both manifests declare the topic and the host declares it (host topics) or the name is
   `<extensionId>.<name>` with a schema (own topics).
 - Topics are visible to every subscriber on the board: never put tokens, keys or personal data there.
+- An own input topic (`subscribes[]` with a `schema`) may set `acceptFrom`: `any` (default), `self` or `trusted`
+  (`trusted` is reserved and granted to no one yet). A refused sender gets `SENDER_NOT_ACCEPTED` only through
+  `bridge.context.onPublishRejected(cb)`; `publish` stays `void` and there is no success acknowledgement.
+- The last-value cache (`fromCache`) is ephemeral session context, not storage. Data that must survive a reload goes
+  to `bridge.state` (below).
+
+## Instance state (`bridge.state`, SDK 3.5.0+)
+
+The host stores one value per extension, placement (`instanceId`) and host user; the platform never stores it.
+Declare `surfaces.ui.state` with a mandatory JSON `schema` and a `schemaVersion` (optional `agentVisible`); without it
+`bridge.state` answers `STATE_SCHEMA_REQUIRED`.
+
+```js
+const rec = await bridge.state.get();                                    // null when nothing is stored
+await bridge.state.set({ tab: 'a' }, { ifVersion: rec?.version ?? 0 });  // CONFLICT carries `current`
+const off = bridge.state.onChanged((r) => render(r.value));              // another tab of the same user
+```
+
+Errors (`InstanceStateError.code`): `NOT_SUPPORTED` (host without a store), `STATE_SCHEMA_INVALID`, `STATE_TOO_LARGE`
+(host limit, 64 KiB by default), `CONFLICT`, `STATE_NO_INSTANCE`, `STATE_NO_USER`. After a schema change an old
+record arrives with `stale: true`; the extension migrates it. A hand-written test double of `ExtensionBridge` must now
+provide `state` and `context.onPublishRejected`, or use `createMockBridge`.
 
 Common host topics. They are available only where the host domain lists them: check `.finamx/domain/<hostId>/CONTEXT.md` and use the types in `types.d.ts`. Reference hosts commonly offer:
 

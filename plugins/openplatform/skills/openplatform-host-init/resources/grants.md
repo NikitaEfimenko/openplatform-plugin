@@ -7,7 +7,7 @@ Independent flags on the extension (`hostBridge`) and echoed on Launch/session. 
 | Mechanism | Reaches iframe? | Contains a user? | Who signs | Who verifies | Never use it for |
 |-----------|-----------------|------------------|-----------|--------------|------------------|
 | Launch sessionJwt | No. Host only. | Host session subject, not an extension claim | Platform (Launch) | Platform on invoke | Iframe, extension BFF, URL, logs |
-| platform.auth_context.v1 | Exchange code via widget.identity.grant, then the JWT after redeem | No sub | Platform (`iss` = `cms`) | Extension via verifyPlatformClaim | User identity, SSO, upstream Core access |
+| platform.auth_context.v1 | Exchange code via widget.identity.grant, then the JWT after redeem | No sub unless the extension opts in (`requiresUserKey` or `surfaces.ui.state`); then the CMS puts the pairwise `uh_` handle, never the host user id | Platform (`iss` = `cms`) | Extension via verifyPlatformClaim | User identity, SSO, upstream Core access |
 | platform.identity.v1 | Compact JWT via widget.identity.grant profile platform.identity.v1 field identityToken | Yes. `sub` is the host-local user id | Host, ES256, private key only on the host | Extension BFF via verifyHostIdentity (host JWKS + platform-signed authorized-issuers) | SSO, account linking, s2s data access, another extension `aud` |
 | platform.s2s.v1 | No | No sub (userless) | Platform | Extension webhook verifier | User identity, iframe |
 | platform.s2s.user.v1 | No | Pairwise `uh_` handle (push) or host bucket (pull), 120 s, one scope, consent-gated | Platform | Extension (push) or host verifyUserBoundS2s (pull) | Replacing identity, SSO, widening scope, iframe |
@@ -20,7 +20,7 @@ Independent flags on the extension (`hostBridge`) and echoed on Launch/session. 
 | `requiresIdentityContext` | `widget.identity.grant` profile `platform.identity.v1`, field `identityToken` | `mintIdentity` calls your server route, which signs with `signHostIdentity` from `@finamx/host-bridge/server` (the private key never reaches the browser) and returns `{ profile: 'platform.identity.v1', mode: 'identity', identityToken }` |
 | `requiresAuthContext` | profile `platform.auth_context.v1` (exchange) | Auto from Launch `exchangeCode`/`redeemUrl`, or `mintAuthContext`; remint via `remintAuthContext` |
 
-Both true → send the identity grant first, then the auth-context grant (two envelopes). Keep `identityGrant` and `authContextGrant` separate in UI state. A wrong-profile result in a slot is dropped with an error, never posted. Do not put `sub` into auth-context.
+Both true → send the identity grant first, then the auth-context grant (two envelopes). Keep `identityGrant` and `authContextGrant` separate in UI state. A wrong-profile result in a slot is dropped with an error, never posted. The host never puts a user id into auth-context: the CMS issues it and derives `sub` itself from the Launch session.
 
 The extension verifies the identity with `verifyHostIdentity` (or `resolveHostIdentity` in the SDK waiter): ES256 signature by the host JWKS **and** the platform-signed authorized-issuers document for that extension. The host sends no shared-secret identity. `platform.s2s.user.v1` is consent-gated host data access for an extension backend; it is not identity and not SSO.
 

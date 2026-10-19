@@ -16,7 +16,7 @@ Tools submit the **last** entry of `versions[]`; for a brand-new extension the w
 | `platformSupport` | at least one of `web`, `ios`, `android` |
 | `visibility` | `public` (default), `unlisted`, `private` |
 | `desiredHostIds` | optional wish list of host ids; it does **not** enable the extension in a host, the moderator does |
-| `hostBridge` | optional `{ requiresAuthContext, requiresIdentityContext }` booleans, see `auth-context.md` |
+| `hostBridge` | optional `{ requiresAuthContext, requiresIdentityContext, requiresUserKey }` booleans, see `auth-context.md` |
 | `versions` | at least one version |
 
 ## Version
