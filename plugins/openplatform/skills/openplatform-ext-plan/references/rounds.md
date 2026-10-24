@@ -34,9 +34,13 @@ Ask these together unless the user already answered some:
 3. Where does the data come from? (neighbour extension topics, host methods, a public API, the user's own backend)
 4. What must happen between extensions? (which one publishes what, which one reacts)
 5. Which hosts should it run on, now and later?
+6. Does the screen have per-user settings (filters, tab, columns, form draft), and must they survive a reload or follow the user to another device? (`bridge.state` with a schema)
+7. Who must be able to change them besides the user (the host's agent, your server), and should the agent be able to see them? (an input topic as the command channel, `agentVisible`, BFF or MCP for vendor settings)
+8. Which inputs change something important, and which only display? (`acceptFrom: "self"` versus open; how refusals are handled)
 
 Recommended answers come from facts you have already gathered: if one host is visible to the developer, recommend
 it; if the data is public and static, recommend a static widget with no backend.
+For question 6 recommend `bridge.state` whenever a screen has filters or forms; for 8 recommend `self` only for inputs that change something important.
 
 ## Rules
 

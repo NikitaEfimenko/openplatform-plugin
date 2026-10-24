@@ -53,15 +53,25 @@ Ask only what you cannot detect. Batches of 2 to 4. Recommended option first. Ac
 9. **extensionId**: propose `com.<github-user-or-company>.<slug>`; lowercase letters, digits, hyphens, dots.
    Never `com.finamx.*`. It is permanent and owned by the account that submits it first.
 10. **Platforms**: web (recommended) / also ios, android (the widget must then work in mobile web views).
+11. **Settings and state.** Does the screen have per-user settings (filters, tab, columns, form draft), and must they
+    survive a reload or follow the user to another device? Yes: `bridge.state` with a schema, `schemaVersion`
+    (recommended for any screen with filters or forms). Vendor-side data: BFF keyed by `authContextStateKey`. Never the
+    last-value cache. Details: `state.md`.
+12. **Control.** Who must change them besides the user (the host's agent, your server), and should the agent see them?
+    Agent or host changes the screen: an input topic as the command channel (the widget applies, then persists);
+    agent reads: `agentVisible`; vendor settings: BFF or MCP. Details: `state.md`.
+13. **Trust.** Which inputs change something important (order prefill, actions) and which only display? Important:
+    `acceptFrom: "self"`; display-only: open. How does the widget handle a refused publish
+    (`onPublishRejected`)? Details: `trust.md`.
 
 ## Batch 4: build and delivery
 
-11. **Stack**: the generated project, vanilla JS + esbuild (recommended, already compliant) / keep the existing framework.
-12. **Delivery**: artifact upload of `dist/` (recommended) / they already host it and want `embedBundleUrl`
+14. **Stack**: the generated project, vanilla JS + esbuild (recommended, already compliant) / keep the existing framework.
+15. **Delivery**: artifact upload of `dist/` (recommended) / they already host it and want `embedBundleUrl`
     (platform still freezes a copy at submit) / headless (no UI). Details in the openplatform-ext-publish skill.
-13. **Paid?** Free (recommended to start) / one_time, subscription, freemium, trial_then_paid: monetization is per
+16. **Paid?** Free (recommended to start) / one_time, subscription, freemium, trial_then_paid: monetization is per
     version, a free version cannot be turned paid later (publish a new version).
-14. **Target portal**: the shared portal `https://openplatform.changesandbox.ru` (default) or a local platform
+17. **Target portal**: the shared portal `https://openplatform.changesandbox.ru` (default) or a local platform
     `http://127.0.0.1:3001`.
 
 ## Plan card
@@ -77,6 +87,8 @@ Plan
 - Usage: <board how-to | none>
 - Data: <sources>; backend: <none | what and where>
 - Talks to: subscribes <topics>; publishes <topics>
+- State and control: <bridge.state schema | BFF | none>; agent: <agentVisible, command topic | none>
+- Trust: <acceptFrom per own input; Publisher pin on BFF | none>
 - Scopes: <list>   Auth: <none | auth context | host identity | own OIDC>
 - External origins (need review): <list or none>
 - Stack: <template | existing framework>   Delivery: <artifact | embedBundleUrl | headless>

@@ -51,6 +51,10 @@ start the reviewer with the project root and the host ids. Elsewhere do the revi
 4. Scopes equal what the pulled domain of the host lists and what the code actually calls: no more, no less.
 5. Topics: own topics are named `<extensionId>.<name>` and have a schema; host topics have none.
 6. No secrets in the manifest, the build or the repository.
+7. State: `surfaces.ui.state` has a schema plus `schemaVersion`, stale records are migrated, `NOT_SUPPORTED` is handled,
+   `fromCache` is not used as storage; BFF keys come only from `authContextStateKey`, `onConsentRevoked` is idempotent.
+8. Trust: `acceptFrom` is decided for every own input, `onPublishRejected` is handled, the BFF pins `expectedPublisher`
+   or `expectedAud`.
 
 Show the user the result and wait for their explicit confirmation. Never run `finamx-ext publish` without it.
 

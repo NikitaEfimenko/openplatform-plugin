@@ -42,6 +42,14 @@ confirms before anyone runs `finamx-ext publish`.
 | 15 | Secrets | no keys or tokens in `dist/`, topics or logs; `.env` is gitignored | grep `dist/` and `src/` for key-like strings; read `.gitignore` and find the `.env` line (do not open `.env`) |
 | 16 | Methods | host methods go through `createDomainClient` with the pulled `domain.json`, not raw `bridge.platform.invoke` | grep `createDomainClient` and `bridge.platform.invoke` in `src/` |
 | 17 | Layout | the widget works with and without `host:container` (no size: sensible default; breakpoints declared in `surfaces.ui.layout` match the CSS) | read `src/` for `onContainerSize` / `data-finamx-breakpoint` and `surfaces.ui.layout` |
+| 18 | State | `surfaces.ui.state` has `schema` and `schemaVersion`; a changed schema bumps `schemaVersion` | read `manifest.json` |
+| 19 | State | stale records (`stale: true`) are migrated | grep `stale` and a migrate function in `src/` |
+| 20 | State | `NOT_SUPPORTED` is handled: the widget works on defaults without a store | grep `InstanceStateError` / `NOT_SUPPORTED` in `src/` |
+| 21 | State | no `fromCache` used as storage; durable data goes to `bridge.state` or the BFF | grep `fromCache` in `src/` |
+| 22 | Backend | BFF keys come only from `authContextStateKey(claims)`, never from body ids; `onConsentRevoked` is idempotent | read the backend |
+| 23 | Trust | `acceptFrom` is decided for every own input topic (`self` for inputs that change something important) | `surfaces.topics.subscribes[]` |
+| 24 | Trust | `onPublishRejected` is handled, with no retry loop, for every topic the widget publishes to another extension | grep `onPublishRejected` in `src/` |
+| 25 | Backend | the verifier pins `expectedPublisher` or `expectedAud` | grep `verifyPlatformClaim` options in the backend |
 
 Common failure codes and their fixes are in the `openplatform-ext-publish` skill (`references/errors.md`).
 
