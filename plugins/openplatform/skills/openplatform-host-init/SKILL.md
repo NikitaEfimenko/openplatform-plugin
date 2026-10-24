@@ -17,6 +17,17 @@ Self-contained skill. Templates and rules are under `resources/`. Do not chase m
 
 Sibling: `openplatform-ext-init` (extension side).
 
+## Account and key (ask first)
+
+Ask first: «Вы уже зарегистрированы на портале (вы или владелец платформы) и есть ли ключ?» A host works with a host
+key (`fxh_...`) that the platform admin issues in `/admin` -> Hosts -> Issue key. It lives only in the host server
+environment (`FINAMX_HOST_TOKEN`), never in the browser bundle and never in the chat. No account yet: send the person
+to the portal (`<portal>/ru/developer/register`, `/en/...` for English; `<portal>` is the instance, default
+`https://openplatform.changesandbox.ru`, ask for the URL of another white-label instance) and to the platform admin for
+the host record. If a developer of this host also wants to build an extension, they sign in to the cabinet and run
+`npx @finamx/extension-sdk login` in their own terminal (hidden prompt). If anybody pastes a key into the chat, tell
+them to revoke it and issue a new one, and do not repeat it.
+
 ## Clarification (ask before coding)
 
 ```

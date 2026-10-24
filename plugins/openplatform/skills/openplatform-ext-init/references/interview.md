@@ -69,10 +69,22 @@ Ask only what you cannot detect. Batches of 2 to 4. Recommended option first. Ac
 14. **Stack**: the generated project, vanilla JS + esbuild (recommended, already compliant) / keep the existing framework.
 15. **Delivery**: artifact upload of `dist/` (recommended) / they already host it and want `embedBundleUrl`
     (platform still freezes a copy at submit) / headless (no UI). Details in the openplatform-ext-publish skill.
-16. **Paid?** Free (recommended to start) / one_time, subscription, freemium, trial_then_paid: monetization is per
+16. **Size.** Какого размера виджет? Compact (about 320x200) / medium (about 480x320, recommended) / wide (about 720x400)
+    / fits the container. Map the answer to `surfaces.ui.layout.preferredSize` (`width`, `height` in px; or
+    `aspectRatio` such as `16:9`) and, when the layout must change with the box, `breakpoints`. "Fits the container"
+    means no `preferredSize`, only `breakpoints` and CSS that renders at any size. It is a hint: the host decides, the
+    widget still has to look right at any size. Examples: `manifest.md`; reading it at runtime: `runtime.md`.
+17. **Paid?** Free (recommended to start) / one_time, subscription, freemium, trial_then_paid: monetization is per
     version, a free version cannot be turned paid later (publish a new version).
-17. **Target portal**: the shared portal `https://openplatform.changesandbox.ru` (default) or a local platform
+18. **Target portal**: the shared portal `https://openplatform.changesandbox.ru` (default) or a local platform
     `http://127.0.0.1:3001`.
+
+### When the data answer needs a separate deploy or a backend
+
+Check what the project already has (`git remote -v`, `gh auth status`, `vercel whoami`, `vercel.json`,
+`.vercel/project.json`) and say it in one line. On GitHub (or no git yet) recommend the preset **GitHub + Vercel** for
+a BFF: ask "(recommended) GitHub + Vercel / another host you already use". On GitLab or any other host keep the neutral
+path. Details and steps: `data-and-backend.md`, "Deploy preset: GitHub + Vercel".
 
 ## Plan card
 
@@ -92,6 +104,8 @@ Plan
 - Scopes: <list>   Auth: <none | auth context | host identity | own OIDC>
 - External origins (need review): <list or none>
 - Stack: <template | existing framework>   Delivery: <artifact | embedBundleUrl | headless>
+- Size: <compact | medium | wide | fits container> (preferredSize <WxH | none>)
+- Deploy: <none | GitHub + Vercel | other>
 - Portal: <url>   Price: <free | …>
 Next: login -> domain pull -> scaffold -> manifest -> code -> build + check + check --host -> publish
 ```

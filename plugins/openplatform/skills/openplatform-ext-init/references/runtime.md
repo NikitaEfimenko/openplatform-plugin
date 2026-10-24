@@ -119,6 +119,18 @@ bridge.ui.setSizePreference({ width: 480, height: 360 }); // tell the host the s
   `breakpoints: [{ name: 'compact', maxWidth: 599 }, { name: 'wide', minWidth: 600 }]` (name `^[a-z][a-z0-9.-]{0,63}$`, 1 to 16 entries,
   each with at least one bound) and `preferredSize: { width?, height?, aspectRatio? }` (`W:H`). The active breakpoint is the first
   declared one whose bounds all hold.
+- The recommended size from the manifest is readable at runtime (SDK with `bridge.ui.layout()`):
+
+  ```js
+  const preferred = bridge.ui.layout()?.preferredSize;   // { width?, height?, aspectRatio? } or undefined
+  const box = bridge.ui.containerSize();                  // the box the host actually gave you
+  if (!box && preferred?.height) bridge.ui.setSizePreference({ height: preferred.height });
+  bridge.ui.autoResize();                                 // the frame follows your content height
+  ```
+
+  `preferredSize` is the recommendation, `containerSize()` / `onContainerSize` is the real box, `setSizePreference` is the
+  runtime override, `autoResize` follows content. The widget must render sensibly at any size: never rely on the
+  recommended size being honoured.
 - Style by `[data-finamx-breakpoint="compact"]` or the CSS variables instead of `100vh` or `window.innerWidth`.
 
 ## Theme and UI tokens (required)

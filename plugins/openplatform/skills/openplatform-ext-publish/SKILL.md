@@ -63,11 +63,12 @@ Show the user the result and wait for their explicit confirmation. Never run `fi
 1. Register at `<portal>/developer/register` (email, password, name). One account per publisher; the account that
    submits an `extensionId` first owns it for good.
 2. Cabinet (`<portal>/developer/dashboard`) -> generate a developer key. It is shown once.
-3. Store it with `finamx-ext login` (hidden prompt, or `--token-stdin` fed from a password manager), or as
-   `FINAMX_DEV_TOKEN` in a gitignored `.env`. Never ask for the key in the chat, never paste or print it. Host keys
+3. The developer runs `npx @finamx/extension-sdk login` in their own terminal and types the key into the hidden prompt
+   (another instance: `npx @finamx/extension-sdk --api <url> login`, remembered afterwards). `--token-stdin` and
+   `FINAMX_DEV_TOKEN` are only the CI fallback. Never ask for the key in the chat, never paste or print it. Host keys
    are refused by the CLI and must never be used here.
 
-Key order: `--token`, `FINAMX_DEV_TOKEN`, `.env`, the stored credentials. Check it without printing it:
+Key order: `--token`, `FINAMX_DEV_TOKEN`, `.env`, the stored credentials. Portal order: `--api`, `FINAMX_API_URL`, project `.env`, the stored default portal, the built-in default. Check it without printing it:
 `npx finamx-ext status` answers 401 for a bad key and 404 if this account does not own the extension.
 
 ## 3. Choose the delivery mode
@@ -138,7 +139,7 @@ Full table with causes and fixes: `references/errors.md`. The ones people hit mo
 
 | Answer | Meaning | Do |
 |---|---|---|
-| 401 UNAUTHORIZED | key missing/invalid | new key, `finamx-ext login`, check `.env` is loaded |
+| 401 UNAUTHORIZED | key missing/invalid | new key, `npx @finamx/extension-sdk login`, check the portal (`--api`) |
 | 404 NOT_FOUND on a new version | the extension exists but another account owns it | use the owner's token, ask moderators to transfer, or pick another id |
 | 409 EXTENSION_EXISTS | id taken | `finamx-ext publish` switches to a new version automatically if it is yours |
 | 409 VERSION_NOT_NEWER | version not higher than stored ones | bump semver |
@@ -146,6 +147,7 @@ Full table with causes and fixes: `references/errors.md`. The ones people hit mo
 | 403 NAMESPACE_RESERVED | `com.finamx.*` | own prefix |
 | 400 BUNDLE_IMPORT_FAILED | embedBundleUrl could not be downloaded | 200 without redirects, ≤ 5 MiB / 200 files, or switch to artifact upload |
 | 409 DOMAINS_NOT_APPROVED (moderator side) | an external domain is not approved yet | moderator approves it in Trust & integrity |
+| 400 VERSION_INVALID (moderator side, on Approve) | the pending version fails manifest validation; the answer lists the fields | the moderator rejects with a comment naming the fields; you fix the manifest and submit a new version. Next steps: `references/errors.md`, "Moderation: approve failed" |
 | 409 EXTENSION_INTEGRITY_DRIFT (launch) | the bytes or origin of a reviewed live link changed | restore them or release a new version |
 
 ## References

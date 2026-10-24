@@ -23,7 +23,8 @@ secret lives on a server you run. Everything else can stay in the browser, which
 - Never a shared "widget key" that the browser sends to your server: anyone can copy it from the bundle. Identify
   the caller with the platform auth context instead.
 - Your server keeps its secrets in its own environment. The platform does not store your secrets.
-- The publisher token (`FINAMX_DEV_TOKEN`) is for submitting only; keep it in `.env` (gitignored), never in code.
+- The publisher developer key is for submitting only. It is entered with `npx @finamx/extension-sdk login` (hidden prompt),
+  never in code, never in the chat. `FINAMX_DEV_TOKEN` in a CI secret store is the only other place.
 
 ## User-entered tokens (no backend)
 
@@ -45,6 +46,24 @@ Good for "connect your own account" widgets (e.g. a trading account token the us
    platform JWKS (`<portal>/.well-known/jwks.json`). Details: `auth-context.md`.
 4. The claim proves the platform session, not access to a third-party API: the BFF still does its own upstream
    auth (OAuth with PKCE started in a popup, server-side code exchange).
+
+## Deploy preset: GitHub + Vercel
+
+Recommended for a BFF or any separate deploy when the project is on GitHub (or has no git yet). On GitLab or another
+host keep the neutral path above (any HTTPS host you control).
+
+1. Look first, do not ask: `git remote -v` (GitHub / GitLab / none), `gh auth status`, `vercel whoami`, `vercel.json`,
+   `.vercel/project.json`. Say what exists and what is missing.
+2. Offer to create or link only what is missing: a GitHub repository (`gh repo create`), a linked Vercel project
+   (`vercel link`). Each of these runs under the user's own login and permission prompt; never ask for a Vercel or GitHub
+   token in the chat.
+3. Keep BFF secrets in the Vercel project environment (`vercel env add`), never in the repository or the widget bundle.
+4. Deploy to production with `vercel deploy --prod` and use **one stable production domain** (a custom domain or the
+   project's production alias), not per-commit preview URLs.
+5. Declare that origin in `surfaces.ui.csp.connect` (and the s2s endpoint when s2s is used). Warn the developer:
+   every external origin needs a per-extension moderator approval, and a changed origin means a new review, so a
+   preview wildcard or a rotating URL would be refused or break after approval.
+6. Verify with `finamx-ext check` and `finamx-ext check --host <hostId>` before publishing.
 
 ## Private host data on your server (user-bound s2s)
 

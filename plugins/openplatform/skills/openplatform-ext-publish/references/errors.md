@@ -5,7 +5,7 @@
 | Where | Answer | Cause | Fix |
 |---|---|---|---|
 | any | network error, `fetch failed` | a proxy dropped the connection | `finamx-ext publish` does not resend a state-changing request blindly; it asks the portal and tells you to re-run |
-| any | 401 `UNAUTHORIZED` | no token, wrong token, revoked token, token of another portal | new token in the dashboard; check `FINAMX_DEV_TOKEN` and `FINAMX_API_URL` point to the same portal |
+| any | 401 `UNAUTHORIZED` | no token, wrong token, revoked token, token of another portal | new token in the dashboard; run `npx @finamx/extension-sdk login` again and check `--api` / `FINAMX_API_URL` point to the portal that issued the key |
 | upload | 4xx with `error`/`code` | the artifact violates limits or file rules | `finamx-ext check`: ≤ 200 files, ≤ 5 MiB, allowed types, no hidden files, entry `.html` present |
 | submit | 400 `INVALID_JSON` | not JSON | — |
 | submit | 400 `INVALID_MANIFEST` + `details` | strict schema: unknown key (`kind`, `widget`, `pubsub`, `hosts`), bad extensionId, missing `platformSupport`/`description`, bad semver, `artifact` together with `embedBundleUrl`, `embedEntryPath` with an artifact, bad csp origin, disallowed sandbox token | read `details[].path`; `finamx-ext check` reports the same in plain words |
@@ -33,6 +33,24 @@
 | 409 `DOMAINS_NOT_APPROVED: <kind> <origin>` | an external domain of the version is not approved for this extension (`connect`, `resource`, `frame`, or `bundle` for a live link) | moderator: Trust & integrity → Approve each domain, then approve the version / publish. Developer: justify each domain in the changelog |
 | 400 on "Approve version" with a topic message | a pending version violates the topic rules (submitted before the rules were checked client-side) | fix the manifest, submit the same version number again: a newer pending submission replaces the old one |
 | version approved but the host shows the old one | the open page still runs the old iframe | reload the host page (hard reload) or re-add the widget |
+
+## Moderation: approve failed
+
+The moderator sees these in the admin panel (and the operator MCP) when "Approve" on a version fails. Each answer
+carries a code, a message and, for `VERSION_INVALID`, a list of `path: message` fields. Ask the moderator to copy
+them; never guess a field.
+
+| Answer | What the developer sees | Cause | Fix and next command |
+|---|---|---|---|
+| 400 `VERSION_INVALID` + `issues` | the version stays `pending`; the moderator rejects it with a comment naming the fields | the whole manifest is validated again on approve and a field fails: a csp origin that is not a bare `https://` origin, a disallowed `embedSandbox` token, `artifact` together with `embedBundleUrl` or `embedEntryPath`, `artifact.entry` not a safe relative `.html` path, a missing `price` / `billingInterval` / `trialDays` for a paid type, an own topic without a schema or not named `<extensionId>.<name>`, `s2sChannels` / `s2sWebhookUrl` mismatch, monetization of an existing version changed from free to paid | fix the listed fields; `finamx-ext check`, then `finamx-ext publish` for a new version (a newer pending submission replaces the old one); follow with `finamx-ext status` |
+| 409 `DOMAINS_NOT_APPROVED` + `domains` | status unchanged; the moderator is shown the origins | an external domain (`connect`, `resource`, `frame`, `bundle`) is not approved for this extension | the moderator approves each origin in Trust & integrity and approves again; you justify every origin in the changelog |
+| 400 `INVALID_TRANSITION` | nothing changes | the extension is not in a status that can be published (draft, rejected, suspended) | resubmit with `finamx-ext publish`; a suspended extension: contact the moderators |
+| 409 `NOTHING_TO_APPROVE` | nothing changes | there is no `in_review` extension and no pending version (already decided, or a stale page) | reload the admin panel; `finamx-ext status` shows the real state |
+| 409 `NO_PENDING_VERSION` | nothing changes | there is no version waiting for review | submit it first: `finamx-ext publish` |
+| 409 `EXTENSION_INTEGRITY_DRIFT` (launch, not approve) | the host refuses to launch | the bytes or origin of a reviewed live link changed since review | restore them, or release a new version with `finamx-ext publish` |
+
+A widened embed policy or scope set is not an error: the version is approved but flagged for manual review
+(`needsManualReview`); expect a longer wait and explain the change in the changelog.
 
 ## Launch and runtime (in the host)
 

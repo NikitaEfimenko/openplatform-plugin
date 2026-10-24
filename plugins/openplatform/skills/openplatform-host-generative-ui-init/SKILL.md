@@ -24,6 +24,17 @@ Optional stack for AI SDK hosts: `ai` >= 6, `@ai-sdk/mcp`, `@ai-sdk/react` (MCP 
 Siblings: `openplatform-host-init` (token, Launch basics, CapabilityRouter, domain, grants), `openplatform-ext-init` (author an extension).
 Run host-init first if the host has no token / availability / domain yet.
 
+## Account and key (ask first)
+
+Ask first: «Вы уже зарегистрированы на портале (вы или владелец платформы) и есть ли ключ?» A host works with a host
+key (`fxh_...`) that the platform admin issues in `/admin` -> Hosts -> Issue key. It lives only in the host server
+environment (`FINAMX_HOST_TOKEN`), never in the browser bundle and never in the chat. No account yet: send the person
+to the portal (`<portal>/ru/developer/register`, `/en/...` for English; `<portal>` is the instance, default
+`https://openplatform.changesandbox.ru`, ask for the URL of another white-label instance) and to the platform admin for
+the host record. If a developer of this host also wants to build an extension, they sign in to the cabinet and run
+`npx @finamx/extension-sdk login` in their own terminal (hidden prompt). If anybody pastes a key into the chat, tell
+them to revoke it and issue a new one, and do not repeat it.
+
 ## Clarification (discover first, then ask once)
 
 Run the greps in `resources/discovery.md`, report what you found, then ask ONLY the gaps (Russian OK; full bank `resources/clarification.md`):

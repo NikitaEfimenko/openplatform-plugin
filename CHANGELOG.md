@@ -2,6 +2,28 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.3.0] — 2026-10-24
+
+### Added
+
+- Key-first onboarding: ext-init, ext-plan, host-init and host-generative-ui-init ask first whether the developer is
+  registered and has a key (registration and cabinet links, `<portal>/ru/developer/register`, `.../dashboard#key`); the key
+  is typed into `npx @finamx/extension-sdk login` in the developer's own terminal and never pasted into the chat
+  (revoke and reissue if it was).
+- ext-init checks `git remote -v` at the start and offers the preset "GitHub + Vercel" when a separate deploy or a BFF
+  is needed (`data-and-backend.md`: stable production origin in `csp.connect`, moderator approval of every origin).
+- Sizing: an interview question (compact / medium / wide / fits container), two `surfaces.ui.layout` manifest examples with
+  the schema limits, and a runtime example with `bridge.ui.layout()?.preferredSize` (SDK `[Unreleased]`).
+- ext-publish `errors.md`: "Moderation: approve failed" (`VERSION_INVALID` with fields, `DOMAINS_NOT_APPROVED`,
+  `INVALID_TRANSITION`, `NOTHING_TO_APPROVE`, `NO_PENDING_VERSION`, `EXTENSION_INTEGRITY_DRIFT`) with the next command.
+
+### Changed
+
+- `login` is the primary authentication path everywhere; `--token-stdin` and `FINAMX_DEV_TOKEN` are the CI fallback.
+  `cli.md` documents the stored default portal (`login --api <url>` remembers the instance; order `--api`,
+  `FINAMX_API_URL`, project `.env`, stored default, built-in default).
+- Cursor install line in the README is `npx skills add NikitaEfimenko/openplatform-plugin`, as on the landing.
+
 ## [2.2.0] — 2026-10-24
 
 ### Added

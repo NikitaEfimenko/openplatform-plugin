@@ -136,6 +136,24 @@ Headless (no UI), topics to your server:
   "s2sChannels": { "webhook": { "url": "https://api.acme.com/finamx/topics" } } } }
 ```
 
+Widget with a recommended size (px; a hint, the host decides):
+
+```json
+"ui": { "renderMode": "external-embed", "layout": { "preferredSize": { "width": 480, "height": 320 } } }
+```
+
+Widget that adapts to its box (aspect ratio plus breakpoints):
+
+```json
+"ui": { "renderMode": "external-embed", "layout": {
+  "preferredSize": { "aspectRatio": "16:9" },
+  "breakpoints": [ { "name": "compact", "maxWidth": 599 }, { "name": "wide", "minWidth": 600 } ] } }
+```
+
+Limits of `surfaces.ui.layout` (external-embed only): `preferredSize.width` and `height` are integers 1 to 4096,
+`aspectRatio` is `N:M` with integers 1 to 999, `preferredSize` needs at least one key; at most 16 breakpoints, names
+`^[a-z][a-z0-9.-]{0,63}$`, unique, each with at least one bound and `minWidth` <= `maxWidth`.
+
 ## New version
 
 Append a new object to `versions[]` (do not edit published ones: their bytes are frozen after review), raise the

@@ -6,13 +6,13 @@
 ```bash
 npx @finamx/extension-sdk init my-widget
 cd my-widget && npm install
-finamx-ext login
+npx @finamx/extension-sdk login     # the developer types the key into the hidden prompt, never into the chat
 finamx-ext hosts
 finamx-ext domain pull <hostId>
 finamx-ext publish
 ```
 
-Global options: `--api <url>`, `--token <key>` (legacy, not accepted by `login`), `--json`, `--help`, `--version`.
+Global options: `--api <url>` (portal of the instance; another white-label instance by URL), `--token <key>` (legacy, not accepted by `login`), `--json`, `--help`, `--version`.
 
 ## Commands
 
@@ -62,11 +62,21 @@ submit.
 
 The default portal is `https://openplatform.changesandbox.ru`. Another portal (for example a local platform) is set
 with `--api <url>` or `FINAMX_API_URL`. The key is resolved in this order: `--token`, `FINAMX_DEV_TOKEN`, the
-project `.env`, `~/.config/finamx/credentials.json`.
+project `.env`, `~/.config/finamx/credentials.json` (the CI variable and the flag are the fallback, `login` is the path).
 
 The portal is resolved from `--api`, `FINAMX_API_URL` in the process environment, `FINAMX_API_URL` in the project
-`.env`, then the default. A key from the environment or `--token` is not sent to a portal that only the project
+`.env`, the stored default portal, then the built-in default. A key from the environment or `--token` is not sent to a portal that only the project
 `.env` names: the CLI answers `PORTAL_NOT_CONFIRMED`. Do not edit `.env` to get around it; ask the user to pass
 `--api <url>` or export `FINAMX_API_URL`.
 
 Get a developer key in the portal's developer cabinet (register, then generate an API token). Never commit the key.
+
+**Login is the primary way to authenticate.** The developer runs `npx @finamx/extension-sdk login` in their own terminal
+and types the key into the hidden prompt; the agent never sees it. `--token-stdin` and `FINAMX_DEV_TOKEN` are only the CI
+fallback (a secret store feeding the job), not what you tell a person to do.
+
+**Another instance.** `login --api <url>` (or `FINAMX_API_URL`) validates the key against that portal, saves it for that
+origin and **remembers the portal** as the stored default (`credentials.json`, mode 0600; output `Default portal set
+to <origin>`). Later commands with no `--api`, `FINAMX_API_URL` or project `.env` go to it (source `stored default`).
+Portal order: `--api`, `FINAMX_API_URL`, project `.env`, stored default, built-in default. A portal picked by the project
+`.env`, the stored default or the built-in default is never written back.

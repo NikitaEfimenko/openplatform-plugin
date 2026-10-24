@@ -37,10 +37,25 @@ output reference: `references/cli.md`.
 - Explain the why when a platform rule forces a choice (CSP, sandbox, review). Developers accept constraints they
   understand and fight the ones they do not.
 - Never ask the developer to paste a token or password into the chat. The developer key goes through
-  `finamx-ext login` (hidden prompt or `--token-stdin`), `.env` (gitignored) or the shell environment; you never
-  print it or open `.env` / the credentials file. Never ask for or use a host key (`fxh_...`).
+  `npx @finamx/extension-sdk login` (hidden prompt, typed by the developer in their own terminal); `--token-stdin` and
+  `FINAMX_DEV_TOKEN` are only the CI fallback. You never print the key or open `.env` / the credentials file. Never
+  ask for or use a host key (`fxh_...`).
 
-## Step 0: look before asking
+## Step 0: account and key
+
+Before anything else ask one question: «Вы уже зарегистрированы на портале и создали ключ разработчика?»
+
+- **No:** give the links and keep going with the interview while they register. The portal is the instance the
+  developer works with (default `https://openplatform.changesandbox.ru`; for another white-label instance ask for its
+  URL): registration `<portal>/ru/developer/register` (`/en/...` for English), key `<portal>/ru/developer/dashboard#key`.
+- **Yes:** ask them to run, in their own terminal and in the project folder, `npx @finamx/extension-sdk login` and type
+  the key into the hidden prompt. For another instance: `npx @finamx/extension-sdk --api <url> login`; the CLI remembers
+  that portal for later commands. Then confirm with `finamx-ext hosts` (it prints no key).
+
+The key never goes into the chat. If the developer pastes one anyway, say so, tell them to revoke it in the cabinet and
+create a new one, and do not repeat or store it.
+
+## Step 0b: look before asking
 
 Check the working directory and report in one line what you found:
 
@@ -54,7 +69,8 @@ Check the working directory and report in one line what you found:
 | A backend only (no UI) | headless or MCP extension (`references/data-and-backend.md`) |
 
 Also note: Node version (needs 20+), package manager, whether Google Chrome is installed (`check --host` and
-`dev --headless` use it), and whether `.finamx/domain/` already exists.
+`dev --headless` use it), and whether `.finamx/domain/` already exists. Run `git remote -v` and report GitHub, GitLab
+or none: it decides the deploy path when a backend is needed (Step 5, `references/data-and-backend.md`).
 
 ## Step 1: interview
 
@@ -93,8 +109,8 @@ Then show the plan card and get a yes.
 
 The host's methods, topics and scopes are published by the platform; read them, do not guess and do not ask anyone.
 
-1. `finamx-ext login` if there is no key yet. The developer types the key into the hidden prompt, or pipes it with
-   `--token-stdin` themselves. Never take it in the chat.
+1. Step 0 settled the key. If `finamx-ext hosts` says there is none, ask the developer to run
+   `npx @finamx/extension-sdk login` themselves. Never take the key in the chat.
 2. `finamx-ext hosts --json`: hosts visible to the developer's key, and whether the local manifest `works`, is
    `missing` something or `needs_access`.
 3. `finamx-ext domain pull <hostId>` (or `finamx-ext domain pull templates` when no host is chosen yet). It writes
@@ -168,7 +184,9 @@ Rules that matter most:
 - Call only methods and topics present in the pulled domain; use the generated `types.d.ts` for params and results, and
   call host methods through `createDomainClient(bridge, domain)` so params and results are checked against the topic schemas.
 - The host may send `host:container` (container size); handle it with `bridge.ui.onContainerSize` / `applyContainerSize` and render
-  sensibly when it never arrives.
+  sensibly when it never arrives. The size the manifest recommends is readable with `bridge.ui.layout()?.preferredSize`
+  (a hint; the host decides). Ask the sizing question in the interview and declare `surfaces.ui.layout.preferredSize`
+  (`references/manifest.md`, `references/runtime.md`).
 - Style only through CSS variables; the host theme and tokens must apply to every element (backgrounds, text,
   borders, accents, radius, font). A widget that ignores the host palette looks broken in the host.
 - The platform CSP forbids inline scripts and styles, `eval`/`new Function`, WebAssembly, `data:` URLs (unless
@@ -180,7 +198,9 @@ Rules that matter most:
 
 Only when the interview says so: `references/data-and-backend.md` (decision table: browser-only, host methods,
 user-entered tokens, your own backend with platform auth context, user-bound server-to-server access to host data,
-MCP). The short version: a browser bundle is public and reviewed, so any secret that is yours lives on a server you
+MCP). When the answer needs a separate deploy or a BFF and the project is on GitHub (or has no git yet), offer the
+preset "GitHub + Vercel" (`references/data-and-backend.md`, "Deploy preset: GitHub + Vercel"); on GitLab keep the
+neutral path. The short version: a browser bundle is public and reviewed, so any secret that is yours lives on a server you
 run; the widget proves where it runs to that server with the platform auth context (a launch attestation, no user,
 not SSO), never with a shared key. A trusted host user id comes only from the host-signed `platform.identity.v1`
 (`requiresIdentityContext`, verified with `verifyHostIdentity`); own accounts use the extension's own OIDC. There is
@@ -229,7 +249,7 @@ The exact steps are in `references/agent-loop.md`. Never run `publish` or `login
 ## Step 7: hand off to publishing
 
 When the checks pass, continue with the **openplatform-ext-publish** skill (account and key, upload, review,
-new versions, errors). If that skill is not available, the short path is: `finamx-ext login`, then
+new versions, errors). If that skill is not available, the short path is: `npx @finamx/extension-sdk login`, then
 `npm run publish:ext` (`finamx-ext publish`), then `finamx-ext status`.
 
 ## Checklist before handing off

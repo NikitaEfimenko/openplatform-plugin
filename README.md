@@ -30,8 +30,13 @@ then install `openplatform` from the plugin directory (`/plugins`). Codex reads 
 
 **Cursor**
 
-Dashboard → Plugins → Add Marketplace → Import from Repo → `https://github.com/NikitaEfimenko/openplatform-plugin`
-(reads `.cursor-plugin/marketplace.json`), then enable `openplatform`.
+```bash
+npx skills add NikitaEfimenko/openplatform-plugin
+```
+
+(the same line as on the platform landing; the skills land in `.cursor/skills/`). Alternative: Dashboard → Plugins → Add
+Marketplace → Import from Repo → `https://github.com/NikitaEfimenko/openplatform-plugin` (reads
+`.cursor-plugin/marketplace.json`), then enable `openplatform`.
 
 **Any other agent** (Gemini CLI, GitHub Copilot, Windsurf, OpenCode…), or a single project:
 
@@ -128,11 +133,12 @@ I want to build a FinamX widget that shows news for the instrument selected in n
 The agent asks a few questions (each with a recommended option), writes a plan and runs:
 
 ```bash
+npx @finamx/extension-sdk login     # type the developer key into the hidden prompt (never into the chat)
 npx @finamx/extension-sdk init      # scaffold the project
 finamx-ext domain pull <hostId>     # the host's real topics, methods and scopes
 npm run dev                         # local dev host with an event log
 finamx-ext check --host <hostId>    # manifest, CSP, topics and scopes against the host domain
-finamx-ext publish                  # upload and submit for review (token in .env)
+finamx-ext publish                  # upload and submit for review (the key from login)
 ```
 
 ## Upgrading from 1.x
@@ -213,6 +219,9 @@ MIT
 заменены на `npx @finamx/extension-sdk init` и `finamx-ext`. Обновление с 1.x: удалите копии
 `.claude/skills/openplatform-*` и `.agents/skills/openplatform-*`, см. «Upgrading from 1.x». Контекст для v0 и
 Databutton: `finamx-ext context <hostId>` (SDK 2.3.0+) или кнопка «Скопировать контекст» в кабинете.
+
+Cursor: `npx skills add NikitaEfimenko/openplatform-plugin`. Каждый входной скилл сначала спрашивает, зарегистрированы ли
+вы и есть ли ключ; ключ вводится командой `npx @finamx/extension-sdk login` в вашем терминале и никогда не вставляется в чат.
 
 Установка: команды выше. Начать можно с фразы агенту:
 «Хочу сделать виджет для открытой платформы FinamX, который …».
