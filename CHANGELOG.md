@@ -2,6 +2,25 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.2.0] — 2026-10-24
+
+### Added
+
+- ext-init references `state.md` and `trust.md`: decision guidance (where data lives: `bridge.state`, BFF keyed by
+  `authContextStateKey`, last-value cache; filter-panel pattern; agent control through an input topic; `acceptFrom`,
+  `meta.relation`, `onPublishRejected`, Publisher pin on the BFF) and how to test it. They condense the platform
+  guides `extension-state` and `extension-trust` (application-layer guides of the platform repository, in Russian)
+  and the RFCs RFC-EXTENSION-STATE / RFC-EXTENSION-TRUST.
+- Three questions (settings and state, control, trust) in the ext-init interview and the ext-plan first round; the PRD
+  template gets "State and control" and "Shared topics and trust" sections ("none" when they do not apply).
+- Review checklist rows 18-25 and publish-skill review items 7-8 for state, BFF keys, `acceptFrom`, rejections and the
+  verifier pin.
+- Four evals: `state-filters`, `state-bff-key`, `trust-accept-from`, `agent-command-topic` (14 in total).
+
+### Changed
+
+- `runtime.md` keeps the API tables and points to `state.md` / `trust.md` for decisions.
+
 ## [2.1.0] — 2026-10-19
 
 ### Changed
