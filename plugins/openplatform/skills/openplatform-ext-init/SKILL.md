@@ -253,6 +253,8 @@ new versions, errors). If that skill is not available, the short path is: `finam
 | `references/interview.md` | full question bank, branches, plan card |
 | `references/manifest.md` | manifest fields, examples (UI, headless, topics, MCP), old formats |
 | `references/runtime.md` | bridge API, topics, host methods and scopes, tokens, fixtures |
+| `references/state.md` | the extension has user settings, filters or forms: where data lives, `bridge.state`, BFF keys, agent control |
+| `references/trust.md` | the extension reads or writes topics shared with other extensions: `meta.relation`, `acceptFrom`, rejections, Publisher pin |
 | `references/sandbox-and-csp.md` | what the platform CSP and sandbox block and how to work with it |
 | `references/data-and-backend.md` | where data comes from, secrets, backend, auth context, s2s, MCP |
 | `references/auth-context.md` | mechanism matrix: auth context, host identity (ES256), s2s, own OIDC |

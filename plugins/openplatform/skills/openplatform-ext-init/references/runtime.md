@@ -38,23 +38,22 @@ bridge.context.publish('fdc3.instrument', { type: 'fdc3.instrument', id: { ticke
   `bridge.context.onPublishRejected(cb)`; `publish` stays `void` and there is no success acknowledgement.
 - The last-value cache (`fromCache`) is ephemeral session context, not storage. Data that must survive a reload goes
   to `bridge.state` (below).
+- Decisions (when to use `acceptFrom`, how to treat `meta.relation`): `trust.md`.
 
 ## Instance state (`bridge.state`, SDK 3.5.0+)
 
-The host stores one value per extension, placement (`instanceId`) and host user; the platform never stores it.
-Declare `surfaces.ui.state` with a mandatory JSON `schema` and a `schemaVersion` (optional `agentVisible`); without it
-`bridge.state` answers `STATE_SCHEMA_REQUIRED`.
+Declare `surfaces.ui.state` (mandatory JSON `schema`, `schemaVersion`, optional `agentVisible`); without it
+`bridge.state` answers `STATE_SCHEMA_REQUIRED`. Decisions (where data lives, filter pattern, BFF keys, agent control): `state.md`.
 
-```js
-const rec = await bridge.state.get();                                    // null when nothing is stored
-await bridge.state.set({ tab: 'a' }, { ifVersion: rec?.version ?? 0 });  // CONFLICT carries `current`
-const off = bridge.state.onChanged((r) => render(r.value));              // another tab of the same user
-```
+| Call | Meaning |
+|---|---|
+| `bridge.state.get()` | record `{ value, version, schemaVersion, stale? }` or `null` |
+| `bridge.state.set(value, { ifVersion })` | save; `CONFLICT` carries `err.current` |
+| `bridge.state.onChanged(cb)` | change from another tab of the same user; returns an unsubscribe |
 
-Errors (`InstanceStateError.code`): `NOT_SUPPORTED` (host without a store), `STATE_SCHEMA_INVALID`, `STATE_TOO_LARGE`
-(host limit, 64 KiB by default), `CONFLICT`, `STATE_NO_INSTANCE`, `STATE_NO_USER`. After a schema change an old
-record arrives with `stale: true`; the extension migrates it. A hand-written test double of `ExtensionBridge` must now
-provide `state` and `context.onPublishRejected`, or use `createMockBridge`.
+`InstanceStateError.code`: `NOT_SUPPORTED`, `STATE_SCHEMA_REQUIRED`, `STATE_SCHEMA_INVALID`, `STATE_TOO_LARGE` (host limit,
+64 KiB by default), `CONFLICT`, `STATE_NO_INSTANCE`, `STATE_NO_USER`. A hand-written test double of `ExtensionBridge`
+must provide `state` and `context.onPublishRejected`, or use `createMockBridge`.
 
 Common host topics. They are available only where the host domain lists them: check `.finamx/domain/<hostId>/CONTEXT.md` and use the types in `types.d.ts`. Reference hosts commonly offer:
 
