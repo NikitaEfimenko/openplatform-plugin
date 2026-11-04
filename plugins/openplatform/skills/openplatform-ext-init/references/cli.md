@@ -1,6 +1,6 @@
 # finamx-ext CLI reference
 
-`finamx-ext` ships with `@finamx/extension-sdk` (SDK 2.2.0 or newer, Node 20+). Use it through the project scripts or
+`finamx-ext` ships with `@finamx/extension-sdk` (SDK 2.2.0 or newer, Node 20+; use 3.7.0+ for the features in this plugin). Use it through the project scripts or
 `npx @finamx/extension-sdk <command>` before the package is installed.
 
 ```bash
@@ -12,7 +12,7 @@ finamx-ext domain pull <hostId>
 finamx-ext publish
 ```
 
-Global options: `--api <url>` (portal of the instance; another white-label instance by URL), `--token <key>` (legacy, not accepted by `login`), `--json`, `--help`, `--version`.
+Global options: `--api <url>` (portal of the instance; another white-label instance by URL), `--token <key>` (legacy, not accepted by `login`), `--publisher <id>`, `--json`, `--help`, `--version`.
 
 ## Commands
 
@@ -29,6 +29,12 @@ Global options: `--api <url>` (portal of the instance; another white-label insta
 | `dev` | `--port`, `--json`, `--headless`, `--open`, `--strict-csp`, `--no-watch`, `--no-poll` | Local developer host: bento board, host selector, mocks from domain schemas, bus and consent panels, s2s mock. Needs the optional `@finamx/dev-host`. Loopback only, a per-run secret, mocks only; the developer key never reaches the board. Your `watch` script is started automatically with your user's permissions (`--no-watch` skips it) |
 | `publish` | `--manifest`, `--dist`, `--entry`, `--artifact-dir`, `--artifact-entry`, `--dry-run`, `--skip-checks` | Submit the manifest (a new version on 409). Packs `./dist` only when the manifest pins no artifact and has no `embedBundleUrl` |
 | `status [extensionId]` | `--manifest`, `--json` | Moderation state; the id defaults to the manifest |
+| `gateway-health` | `--check <namespace>`, `--json` | Publisher-scoped MCP vendor status; `--check` makes a safe initialize probe |
+| `push` | `--manifest`, `--dist`, `--entry`, `--dry-run`, `--skip-checks` | Upload a private artifact to a linked development host |
+| `link <hostId>` | `--list` | Create or list developer links; a new link prints a one-time code |
+| `unlink <hostId>` | — | Revoke a developer link |
+| `publishers [use <id>]` | — | List Publisher memberships or select the default Publisher |
+| `analytics` | `--extension`, `--from`, `--to`, `--host`, `--version`, `--method`, `--kind`, `--group-by`, `--json` | Publisher analytics with privacy thresholds |
 | `context [<hostId>\|templates]` | `--remote`, `--json` | (SDK 2.3.0 and newer) print the host context as Markdown for tools that cannot read files. Reads the pulled copy in `.finamx/domain/`; `--remote` fetches the domain from the portal with the developer key instead and writes nothing. Without a target: the only pulled host (several are an error); with nothing pulled, `--remote` means `templates` and the offline form fails |
 
 Template npm scripts: `build` (`node build.mjs`), `watch`, `dev` (`finamx-ext dev`), `check` (`finamx-ext check`),
@@ -45,10 +51,10 @@ Template npm scripts: `build` (`node build.mjs`), `watch`, `dev` (`finamx-ext de
   `domain: 'synthetic'` or `hostCompatibilityChecked: false` means no real host was checked.
 - `status --json`: version states and moderation notes.
 - `context --json`: `{ format, target, kind, origin: 'pulled' | 'portal', domainHash, markdown }`.
+- `gateway-health --json`: published MCP namespaces and their status; `--check` probes one namespace with initialize only.
 
-`init`, `login`, `serve` and `publish` print no JSON. The table above is the whole CLI. The general
-templates are pulled with `domain pull templates`, and the CLI has no command to request host access, push, link or
-submit.
+`init`, `login`, `serve` and `publish` print no JSON. The table above is the whole CLI. General
+templates are pulled with `domain pull templates`; host access requests still go through the portal.
 
 ## Exit codes
 

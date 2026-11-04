@@ -55,6 +55,9 @@ start the reviewer with the project root and the host ids. Elsewhere do the revi
    `fromCache` is not used as storage; BFF keys come only from `authContextStateKey`, `onConsentRevoked` is idempotent.
 8. Trust: `acceptFrom` is decided for every own input, `onPublishRejected` is handled, the BFF pins `expectedPublisher`
    or `expectedAud`.
+9. If backend pull or Flow Runner completion is used, register only the public `s2sClient` JWK and matching `kid`;
+   keep the private JWK out of the repository and bundle. A durable step must have an s2s topic and an idempotent
+   completion handler.
 
 Show the user the result and wait for their explicit confirmation. Never run `finamx-ext publish` without it.
 

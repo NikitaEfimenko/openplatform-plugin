@@ -1,16 +1,13 @@
 ---
 name: openplatform-ext-init
 description: >-
-  Takes a developer from an empty folder (or an existing web app) to a working FinamX Open Platform extension
-  (widget, headless topic processor or MCP tools): interviews with recommended answers, scaffolds the project with
-  the finamx-ext CLI (npx @finamx/extension-sdk init), pulls the real host domain (finamx-ext hosts, domain pull,
-  .finamx/domain), writes manifest.json (versions[].surfaces), wires @finamx/extension-sdk (host bridge, host theme
-  and UI tokens, topics, host methods), settles data and backend, and verifies the build with finamx-ext
-  check, check --host and dev under the platform CSP. Use it whenever someone wants to build,
-  convert, fix or check a FinamX / Finam / Open Platform extension or widget, mentions manifest.json surfaces,
-  finamx-ext, a host domain, .finamx, a widget that is blank inside the host, or says "I want to send you an
-  extension". For submitting, versions and moderation use openplatform-ext-publish; for embedding
-  extensions into a host app use openplatform-host-init.
+  Build or convert a FinamX Open Platform extension (widget, headless topic processor, or MCP tools).
+  Interviews the developer, scaffolds with finamx-ext, pulls a real host domain, writes manifest.json
+  surfaces, wires the extension SDK, sizing, per-user state, topics and host methods, and sets up s2s
+  public keys and Flow Runner completion when needed. Verifies the build with finamx-ext check,
+  check --host, and dev under platform CSP. Use for extension creation, migration, broken embeds,
+  manifest surfaces, host domains, or finamx-ext. For submission and moderation use
+  openplatform-ext-publish; for host embedding use openplatform-host-init.
 ---
 
 # FinamX Open Platform: build an extension
@@ -187,6 +184,9 @@ Rules that matter most:
   sensibly when it never arrives. The size the manifest recommends is readable with `bridge.ui.layout()?.preferredSize`
   (a hint; the host decides). Ask the sizing question in the interview and declare `surfaces.ui.layout.preferredSize`
   (`references/manifest.md`, `references/runtime.md`).
+- If the widget remembers filters, tabs or drafts, declare `surfaces.ui.state` and use `bridge.state` with
+  version-aware writes; read `references/state.md`. Ask whether the host agent should read it (`agentVisible`) or
+  control it through an input topic. State is per user and placement, not a shared workflow store.
 - Style only through CSS variables; the host theme and tokens must apply to every element (backgrounds, text,
   borders, accents, radius, font). A widget that ignores the host palette looks broken in the host.
 - The platform CSP forbids inline scripts and styles, `eval`/`new Function`, WebAssembly, `data:` URLs (unless
@@ -206,6 +206,11 @@ not SSO), never with a shared key. A trusted host user id comes only from the ho
 (`requiresIdentityContext`, verified with `verifyHostIdentity`); own accounts use the extension's own OIDC. There is
 no shared-secret (HMAC) identity. Ask "what must the backend trust?" and route with the matrix in
 `references/auth-context.md`.
+
+If the backend needs private host data or completes a Flow Runner step, register its ES256 public JWK and `kid` as
+`s2sClient` with the platform. Generate the pair with `scripts/generate-s2s-keypair.mjs`; keep the private file in a
+gitignored secret directory. For durable graph steps read `references/flow-runner.md` and use the platform completion
+door from the backend, not a host method.
 
 ## Step 6: verify (do not skip)
 
@@ -279,6 +284,8 @@ new versions, errors). If that skill is not available, the short path is: `npx @
 | `references/data-and-backend.md` | where data comes from, secrets, backend, auth context, s2s, MCP |
 | `references/auth-context.md` | mechanism matrix: auth context, host identity (ES256), s2s, own OIDC |
 | `references/user-bound-s2s.md` | backend access to private host data for one user |
+| `references/flow-runner.md` | durable extension graph steps, completion, schedules and triggers |
+| `scripts/generate-s2s-keypair.mjs` | generate an ES256 private JWK and public JWK with matching `kid` for `s2sClient` |
 | `references/convert-existing-app.md` | turning a Vite/React/Next/static app into an extension |
 | `references/migrate-from-scripts.md` | moving an old plugin-template project onto finamx-ext |
 | `references/agent-loop.md` | the hook and subagent steps as plain instructions for any agent |

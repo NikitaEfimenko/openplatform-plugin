@@ -50,6 +50,8 @@ confirms before anyone runs `finamx-ext publish`.
 | 23 | Trust | `acceptFrom` is decided for every own input topic (`self` for inputs that change something important) | `surfaces.topics.subscribes[]` |
 | 24 | Trust | `onPublishRejected` is handled, with no retry loop, for every topic the widget publishes to another extension | grep `onPublishRejected` in `src/` |
 | 25 | Backend | the verifier pins `expectedPublisher` or `expectedAud` | grep `verifyPlatformClaim` options in the backend |
+| 26 | S2S | when backend pull or Flow Runner completion is used, a public P-256 JWK plus matching `kid` is registered as `s2sClient`; private JWK is in a secret store only | inspect public key registration and `.gitignore`; never open the private file |
+| 27 | Flow | a durable step has a declared s2s input topic, idempotent `runId:stepId:call` processing, and a completion call with a fresh assertion for the exact completion URL | inspect backend handler and host flow integration |
 
 Common failure codes and their fixes are in the `openplatform-ext-publish` skill (`references/errors.md`).
 

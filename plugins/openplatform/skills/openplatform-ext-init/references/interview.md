@@ -63,6 +63,9 @@ Ask only what you cannot detect. Batches of 2 to 4. Recommended option first. Ac
 13. **Trust.** Which inputs change something important (order prefill, actions) and which only display? Important:
     `acceptFrom: "self"`; display-only: open. How does the widget handle a refused publish
     (`onPublishRejected`)? Details: `trust.md`.
+    **Durable flow.** Will a host schedule or trigger a multi-extension graph while the widget is closed? If yes,
+    the extension needs an s2s webhook, a registered public JWK for completion, and the flow contract in
+    `flow-runner.md`. A live topic subscription alone does not complete a parked run.
 
 ## Batch 4: build and delivery
 

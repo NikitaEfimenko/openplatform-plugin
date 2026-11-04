@@ -15,6 +15,7 @@ secret lives on a server you run. Everything else can stay in the browser, which
 | Your API key, client secret, database, paid upstream | backend for frontend (BFF) you run; widget calls it | yes | BFF origin in `csp.connect`, usually `hostBridge.requiresAuthContext` |
 | Know which platform user/host is calling your BFF | platform auth context: verified short-lived claim | yes | `requiresAuthContext: true`, scope `auth.context` |
 | Process private host data on your server | user-bound s2s (push to your webhook, or pull with a signed request) | yes | `topics` with `delivery: ["s2s"]`, `s2sClient` key for pull |
+| Complete a scheduled or triggered extension graph step | Flow Runner s2s webhook and completion assertion (`flow-runner.md`) | yes | input topic with `delivery: ["s2s"]`; register `s2sClient` public JWK |
 | Tools for AI agents | your MCP server | yes | `surfaces.mcp` |
 
 ## Secrets: what never goes where

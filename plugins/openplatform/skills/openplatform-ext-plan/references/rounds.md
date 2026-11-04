@@ -37,6 +37,8 @@ Ask these together unless the user already answered some:
 6. Does the screen have per-user settings (filters, tab, columns, form draft), and must they survive a reload or follow the user to another device? (`bridge.state` with a schema)
 7. Who must be able to change them besides the user (the host's agent, your server), and should the agent be able to see them? (an input topic as the command channel, `agentVisible`, BFF or MCP for vendor settings)
 8. Which inputs change something important, and which only display? (`acceptFrom: "self"` versus open; how refusals are handled)
+9. Must a host schedule or trigger a graph of extension steps that continues while widgets are closed? If yes, plan
+   an s2s backend step and Flow Runner completion; ordinary live topics do not make a durable run.
 
 Recommended answers come from facts you have already gathered: if one host is visible to the developer, recommend
 it; if the data is public and static, recommend a static widget with no backend.

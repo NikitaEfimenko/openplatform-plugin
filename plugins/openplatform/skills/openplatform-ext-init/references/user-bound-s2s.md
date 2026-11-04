@@ -38,13 +38,20 @@ const handler = createS2sWebhookHandler({
 
 ## Pull client (your backend -> host data)
 
-Generate an ES256 key pair; keep the private JWK in your secret store, never in the repo or the browser.
+Generate an ES256 key pair; keep the private JWK in your secret store, never in the repo or the browser. The same
+registered `s2sClient` key signs Flow Runner completion assertions (`flow-runner.md`). Run from the extension project,
+replacing the quoted script path with the installed `openplatform-ext-init` skill path:
 
 ```bash
-node -e "crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']).then(async k=>{const j=async x=>JSON.stringify(await crypto.subtle.exportKey('jwk',x));console.log('PRIVATE',await j(k.privateKey));console.log('PUBLIC',await j(k.publicKey))})"
+node "/path/to/openplatform-ext-init/scripts/generate-s2s-keypair.mjs" --out-dir .secrets/finamx-s2s
 ```
 
-Send the **public** JWK and a `kid` to the platform moderators: they register it on your extension record (`s2sClient.publicJwk` + `s2sClient.kid`; it is not part of `manifest.json`). Never send the private key; it is rejected anyway. Changing the key of a published extension triggers a manual review.
+Add `.secrets/` to the extension project's `.gitignore` before running. The script creates a mode-0600
+`s2s-private.jwk.json`, `s2s-public.jwk.json` and `s2s-public.jwks.json` with matching `kid`; it refuses to overwrite
+existing files and prints paths only. Give the **single public JWK** and its `kid` to platform moderators: they register it on your extension
+record (`s2sClient.publicJwk` + `s2sClient.kid`; it is not part of `manifest.json`). Never send the private key.
+Changing the key of a published extension triggers a manual review. On rotation keep the old private key until the
+new public key is approved and active, then switch the backend secret and remove the old key.
 
 ```ts
 import { requestUserS2sToken, callHostMethod } from '@finamx/extension-sdk';
