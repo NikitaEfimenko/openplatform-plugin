@@ -4,7 +4,7 @@ description: >-
   Build or convert a FinamX Open Platform extension (widget, headless topic processor, or MCP tools).
   Interviews the developer, scaffolds with finamx-ext, pulls a real host domain, writes manifest.json
   surfaces, wires the extension SDK, sizing, per-user state, topics and host methods, and sets up s2s
-  public keys and Flow Runner completion when needed. Verifies the build with finamx-ext check,
+  public keys and Flow V2 completion when needed. Verifies the build with finamx-ext check,
   check --host, and dev under platform CSP. Use for extension creation, migration, broken embeds,
   manifest surfaces, host domains, or finamx-ext. For submission and moderation use
   openplatform-ext-publish; for host embedding use openplatform-host-init.
@@ -207,7 +207,7 @@ not SSO), never with a shared key. A trusted host user id comes only from the ho
 no shared-secret (HMAC) identity. Ask "what must the backend trust?" and route with the matrix in
 `references/auth-context.md`.
 
-If the backend needs private host data or completes a Flow Runner step, register its ES256 public JWK and `kid` as
+If the backend needs private host data or completes a Flow V2 step, register its ES256 public JWK and `kid` as
 `s2sClient` with the platform. Generate the pair with `scripts/generate-s2s-keypair.mjs`; keep the private file in a
 gitignored secret directory. Submit the deployed HTTPS webhook URL alongside the extension version and public key.
 For durable graph steps follow `references/flow-runner.md` and use the SDK Flow V2 completion helper from the BFF.

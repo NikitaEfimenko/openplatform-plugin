@@ -81,9 +81,9 @@ otherwise the agent sees two versions with different rules.
 | Skill | Use it to |
 |---|---|
 | `openplatform-ext-plan` | turn an idea into a PRD for one extension or a set of extensions: numbered question rounds, what already exists in the catalog and in the chosen hosts, a map of tickets |
-| `openplatform-ext-init` | build or convert an extension: SDK init, manifest, bridge, host domain, sizing, per-user state, s2s key generation, Flow Runner steps and real-host checks |
+| `openplatform-ext-init` | build or convert an extension: SDK init, manifest, bridge, host domain, sizing, per-user state, s2s key generation, Flow V2 steps and real-host checks |
 | `openplatform-ext-publish` | get a publisher token, choose the delivery mode (artifact upload, `embedBundleUrl`, headless), `finamx-ext publish` and `status`, release new versions, fix every portal error |
-| `openplatform-host-init` | embed extensions into your own host app: launch, host bridge, capability router, pub/sub broker, host domain, consent and durable Flow Runner doors |
+| `openplatform-host-init` | embed extensions into your own host app: launch, host bridge, capability router, pub/sub broker, host domain, consent and Flow V2 lifecycle |
 | `openplatform-host-generative-ui-init` | let a chat or agent in your host show extensions and agent-built UI through the platform MCP, also in external clients (Claude.ai, ChatGPT) as MCP Apps |
 
 ## Hooks and agents (Claude Code)

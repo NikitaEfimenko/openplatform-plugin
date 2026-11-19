@@ -12,7 +12,7 @@ All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
 ### Added
 
-- Flow Runner guidance for extension backends and host BFFs: s2s step delivery, ES256 completion assertion, run, schedule and trigger doors, and the boundary from live topics.
+- Added background workflow guidance for extension backends and host BFFs.
 - `openplatform-ext-init/scripts/generate-s2s-keypair.mjs` generates matching private/public ES256 JWK files and a public JWKS with a `kid`, writes the private file at mode 0600 and never prints it.
 - Explicit extension interview and build flow for per-user state, sizing and durable flows; updated host planning questions.
 

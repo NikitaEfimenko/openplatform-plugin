@@ -55,7 +55,7 @@ start the reviewer with the project root and the host ids. Elsewhere do the revi
    `fromCache` is not used as storage; BFF keys come only from `authContextStateKey`, `onConsentRevoked` is idempotent.
 8. Trust: `acceptFrom` is decided for every own input, `onPublishRejected` is handled, the BFF pins `expectedPublisher`
    or `expectedAud`.
-9. If backend pull or Flow Runner completion is used, register only the public `s2sClient` JWK and matching `kid`;
+9. If backend pull or Flow V2 completion is used, register only the public `s2sClient` JWK and matching `kid`;
    keep the private JWK in the BFF secret store. Submit the deployed HTTPS webhook URL in the version manifest.
    For Flow V2 confirm the registered key, concrete request/output schemas and the owner ACK in a manual run.
 

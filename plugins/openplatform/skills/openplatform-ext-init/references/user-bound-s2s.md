@@ -39,7 +39,7 @@ const handler = createS2sWebhookHandler({
 ## Pull client (your backend -> host data)
 
 Generate an ES256 key pair; keep the private JWK in your secret store, never in the repo or the browser. The same
-registered `s2sClient` key signs Flow Runner completion assertions (`flow-runner.md`). Run from the extension project,
+registered `s2sClient` key signs Flow V2 completion assertions (`flow-runner.md`). Run from the extension project,
 replacing the quoted script path with the installed `openplatform-ext-init` skill path.
 
 ```bash
