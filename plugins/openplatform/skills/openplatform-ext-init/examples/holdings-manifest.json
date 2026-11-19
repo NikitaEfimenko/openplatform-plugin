@@ -1,0 +1,62 @@
+{
+  "extensionId": "com.acme.strategies",
+  "displayName": "Model Holdings",
+  "description": "Provide model portfolio weights to a background strategy program.",
+  "platformSupport": ["web"],
+  "versions": [
+    {
+      "version": "1.0.0",
+      "capabilitiesRequested": ["flow.context", "flow.artifacts"],
+      "surfaces": {
+        "topics": {
+          "subscribes": [
+            {
+              "topicType": "com.acme.strategies.holdings.request",
+              "delivery": ["s2s"],
+              "replyTopicType": "com.acme.strategies.holdings",
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["protocol", "invocationId", "invocationToken", "executionContextRef", "inputRefs"],
+                "properties": {
+                  "protocol": { "const": "finamx.flow.invocation.v2" },
+                  "invocationId": { "type": "string" },
+                  "invocationToken": { "type": "string" },
+                  "executionContextRef": { "type": "string" },
+                  "inputRefs": { "type": "object", "additionalProperties": { "type": "string" } }
+                }
+              }
+            }
+          ],
+          "publishes": [
+            {
+              "topicType": "com.acme.strategies.holdings",
+              "delivery": ["s2s"],
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["asOf", "items"],
+                "properties": {
+                  "asOf": { "type": "string", "format": "date-time" },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["isin", "weight"],
+                      "properties": {
+                        "isin": { "type": "string" },
+                        "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "s2sChannels": { "webhook": { "url": "https://strategies.example.com/finamx/topics" } }
+        }
+      }
+    }
+  ]
+}

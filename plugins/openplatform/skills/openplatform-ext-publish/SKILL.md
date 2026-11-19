@@ -56,8 +56,8 @@ start the reviewer with the project root and the host ids. Elsewhere do the revi
 8. Trust: `acceptFrom` is decided for every own input, `onPublishRejected` is handled, the BFF pins `expectedPublisher`
    or `expectedAud`.
 9. If backend pull or Flow Runner completion is used, register only the public `s2sClient` JWK and matching `kid`;
-   keep the private JWK out of the repository and bundle. A durable step must have an s2s topic and an idempotent
-   completion handler.
+   keep the private JWK in the BFF secret store. Submit the deployed HTTPS webhook URL in the version manifest.
+   For Flow V2 confirm the registered key, concrete request/output schemas and the owner ACK in a manual run.
 
 Show the user the result and wait for their explicit confirmation. Never run `finamx-ext publish` without it.
 

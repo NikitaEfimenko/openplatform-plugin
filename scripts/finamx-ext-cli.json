@@ -1,6 +1,6 @@
 {
-  "comment": "Commands and flags of the finamx-ext CLI (@finamx/extension-sdk 3.7.0). scripts/validate.mjs fails when a skill, agent or the README names a command or flag that is not listed here. Keep it equal to the CLI's own flag table when the SDK changes.",
-  "sdk": "3.7.0",
+  "comment": "Commands and flags of the finamx-ext CLI (@finamx/extension-sdk 3.9.1). scripts/validate.mjs fails when a skill, agent or the README names a command or flag that is not listed here. Keep it equal to the CLI's own flag table when the SDK changes.",
+  "sdk": "3.9.1",
   "global": ["--api", "--token", "--publisher", "--json", "--help", "--version"],
   "subcommands": { "domain": ["pull"] },
   "commands": {

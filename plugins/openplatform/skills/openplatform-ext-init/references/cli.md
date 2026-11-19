@@ -1,7 +1,7 @@
 # finamx-ext CLI reference
 
-`finamx-ext` ships with `@finamx/extension-sdk` (SDK 2.2.0 or newer, Node 20+; use 3.7.0+ for the features in this plugin). Use it through the project scripts or
-`npx @finamx/extension-sdk <command>` before the package is installed.
+`finamx-ext` ships with `@finamx/extension-sdk` (SDK 3.9.1 verified, Node 20+). Use it through the project scripts or
+`npx @finamx/extension-sdk <command>` before the package is installed. For a reproducible run use `npx @finamx/extension-sdk@3.9.1 <command>`.
 
 ```bash
 npx @finamx/extension-sdk init my-widget

@@ -120,8 +120,9 @@ user-bound `platform.s2s.user.v1` token minted by CMS after consent: `resources/
 
 ### 6d. Durable extension flows (optional)
 
-If a graph must run on a schedule or after the UI closes, use the platform Flow Runner doors through the host BFF.
-`resources/flow-runner.md` covers `createFlowDoorsClient`, start/status/schedule/trigger, the `uh_` handle, and the
+If a program must run on a schedule or after the UI closes, confirm the Flow V2 owner, pinned topics and schemas,
+user consent, effect ownership and cancellation policy. Read the host domain before proposing methods.
+`resources/flow-runner.md` covers `createFlowV2DoorsClient`, compile/start/observe/cancel, the `uh_` handle, and the
 extension completion contract. Live PubSub topics remain ephemeral.
 
 ### 7. Verify checklist
@@ -176,7 +177,7 @@ extension completion contract. Live PubSub topics remain ephemeral.
 | `resources/host-domain.json` | Domain example |
 | `resources/host-templates.md` | Template insert (admin panel, dry run, backfill) |
 | `resources/host-served-methods.md` | registerMethod, invoke handler, publishTopic, s2s pull/push |
-| `resources/flow-runner.md` | host BFF flow runs, schedules and triggers |
+| `resources/flow-runner.md` | Flow V2 compile, start, observe and cancel from the host BFF |
 | `resources/cli-host-domain.md` | declare and read back the host domain |
 | `resources/pubsub-rules.md` | Broker / FDC3 / what never goes on the bus |
 | `resources/grants.md` | Mechanism matrix, identity (ES256) + exchange grants, key setup and rotation |

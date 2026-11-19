@@ -2,6 +2,12 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.5.0] — 2026-11-19
+
+- Flow V2 guides and a TypeScript completion example for the AlphaBuilder strategy pattern.
+- Design interview rounds for execution ownership, schemas, BFF registration, consent and acceptance.
+- Verified published SDK versions and added CLI and example checks.
+
 ## [2.4.0] — 2026-11-04
 
 ### Added

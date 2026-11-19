@@ -40,7 +40,7 @@ const handler = createS2sWebhookHandler({
 
 Generate an ES256 key pair; keep the private JWK in your secret store, never in the repo or the browser. The same
 registered `s2sClient` key signs Flow Runner completion assertions (`flow-runner.md`). Run from the extension project,
-replacing the quoted script path with the installed `openplatform-ext-init` skill path:
+replacing the quoted script path with the installed `openplatform-ext-init` skill path.
 
 ```bash
 node "/path/to/openplatform-ext-init/scripts/generate-s2s-keypair.mjs" --out-dir .secrets/finamx-s2s
@@ -49,7 +49,8 @@ node "/path/to/openplatform-ext-init/scripts/generate-s2s-keypair.mjs" --out-dir
 Add `.secrets/` to the extension project's `.gitignore` before running. The script creates a mode-0600
 `s2s-private.jwk.json`, `s2s-public.jwk.json` and `s2s-public.jwks.json` with matching `kid`; it refuses to overwrite
 existing files and prints paths only. Give the **single public JWK** and its `kid` to platform moderators: they register it on your extension
-record (`s2sClient.publicJwk` + `s2sClient.kid`; it is not part of `manifest.json`). Never send the private key.
+record (`s2sClient.publicJwk` + `s2sClient.kid`). Send the extension ID, version, target host and deployed HTTPS
+webhook URL with the public key. Put the URL in the version manifest and keep the private key in the BFF.
 Changing the key of a published extension triggers a manual review. On rotation keep the old private key until the
 new public key is approved and active, then switch the backend secret and remove the old key.
 

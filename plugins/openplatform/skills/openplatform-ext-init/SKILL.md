@@ -209,8 +209,8 @@ no shared-secret (HMAC) identity. Ask "what must the backend trust?" and route w
 
 If the backend needs private host data or completes a Flow Runner step, register its ES256 public JWK and `kid` as
 `s2sClient` with the platform. Generate the pair with `scripts/generate-s2s-keypair.mjs`; keep the private file in a
-gitignored secret directory. For durable graph steps read `references/flow-runner.md` and use the platform completion
-door from the backend, not a host method.
+gitignored secret directory. Submit the deployed HTTPS webhook URL alongside the extension version and public key.
+For durable graph steps follow `references/flow-runner.md` and use the SDK Flow V2 completion helper from the BFF.
 
 ## Step 6: verify (do not skip)
 

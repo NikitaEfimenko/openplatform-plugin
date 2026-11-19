@@ -1,43 +1,30 @@
-# Flow Runner: durable graphs of extension steps
+# Flow V2 extension steps
 
-Use this when a host needs a scheduled or triggered workflow across extension instances. Ordinary `bridge.context` topics are live, ephemeral events; they do not resume a parked run. A Flow Runner step is a server-to-server JSON-RPC `topics/publish` call to the extension's declared webhook. The extension backend processes it and completes the parked step through the platform.
+Choose Flow V2 when the program must run while the board is closed. Use live Bridge topics for interactive wiring. An extension may offer both surfaces with separate contracts.
 
-## Decide and declare
+## Register the BFF
 
-- Ask whether the extension participates in durable flows, and whether it needs a backend to receive steps. A browser-only widget does not receive a parked step while closed.
-- Declare the input topic under `versions[].surfaces.topics.subscribes` with `delivery: ["s2s"]`, a JSON Schema, and `s2sChannels.webhook.url` (HTTPS in production). Use `createS2sWebhookHandler` to verify the incoming token and JSON-RPC envelope. The same endpoint can serve ordinary s2s topics; distinguish the flow call by its `id` and the topic contract.
-- Register an ES256 `s2sClient.publicJwk` and `kid` with the platform for completion. See `user-bound-s2s.md` and `scripts/generate-s2s-keypair.mjs`. This key is on the extension record, not in `manifest.json`.
-- A flow program is compiled from the host's instance graph. A step may invoke an extension only; `config.hostMethod` is refused. If a step needs host data, the extension backend calls the existing user-bound s2s host method under consent.
+1. Confirm the target host exposes Flow V2, the execution owner, and the host's exact method names and grants. For the platform owner, the callback is the trusted CMS HTTPS origin plus `/api/v2/flow/complete`.
+2. Declare a concrete S2S request topic, the reviewed HTTPS POST webhook at `versions[].surfaces.topics.s2sChannels.webhook.url`, and concrete schema-backed outputs. Agree on the input schema for the Flow V2 envelope and set `replyTopicType` on the subscription to the exact declared output topic. The platform compiler uses that topic name as the output port. Pin extension version, schema version and hashes when compiling the program.
+   See the [headless holdings manifest](../examples/holdings-manifest.json).
+3. Deploy the BFF and give the moderator the extension ID, version, target host, webhook URL, public JWK and matching `kid`. Follow [key setup](user-bound-s2s.md). Check the approved version's route, key, host availability, licence and consent before scheduling.
 
-## Complete a parked step (extension backend)
+## Receive, process and complete
 
-Keep the private JWK in the backend secret store. The inbound JSON-RPC `id` is `runId:stepId:call`; use that exact value for completion. Build a fresh `private_key_jwt` assertion whose audience is the full completion URL (including `/api/v1/s2s/flow/complete`). The SDK's `buildClientAssertion` limits it to 60 seconds and gives it a unique `jti`.
-Install `@finamx/host-bridge` in the backend if you use its server-only `completeFlowStep` helper; it must never enter the widget bundle.
+| Boundary | Responsibility |
+|---|---|
+| HTTPS webhook | Use `createS2sWebhookHandler` with `profile: 'user'`. Handle JSON-RPC `topics/publish` on the concrete request topic. Compare RPC ID and payload `invocationId`. The payload carries `invocationToken`, `executionContextRef` and `inputRefs`. |
+| Invocation verification | Use `verifyFlowStepInvocation(token, { expected, trust })` with the registered owner’s invocation-signing authority and exact callback URL/audience from trusted server configuration. For the platform owner use its CMS invocation-signing keys. Obtain expected host, owner, principal, activation, generation, program revision, extension/version and invocation from authorized run context. Never derive the expectation or trusted keys and URL by decoding the incoming token. |
+| Queue | Persist before acknowledging JSON-RPC receipt. Deduplicate by invocation and its owner/run binding. Repeated delivery must recover the same job. Keep capabilities in protected server storage and out of logs. Set a byte limit in the HTTP adapter before buffering the incoming request. |
+| Worker | Read saved config and input refs through the host's declared, consent-gated methods. Compute the output; validate it against the pinned schema and save it with the authorized artifact writer. Keep business data out of workflow history. |
+| Completion | Call `completeStep` with the verified context, refs-only outcome and a fresh audience-bound sender credential. A successful completion is HTTP 200 with protocol `finamx.flow.completion.v2`, `ok: true` and the matching invocation ID. Receiving the job and completing it are separate events. |
 
-```ts
-import { buildClientAssertion } from '@finamx/extension-sdk';
-import { completeFlowStep } from '@finamx/host-bridge/server';
+Use the SDK's `requestUserS2sToken` and `callHostMethod` per declared method, with the user handle from verified context and the CMS-returned endpoint. For the reference strategies host these methods include `flow.v2.context.read({ invocationId })` (grant `flow.context`), `flow.v2.artifact.read({ invocationId, port, ref })` and `flow.v2.artifact.write({ invocationId, port, body })` (grant `flow.artifacts`). Check the pulled host domain before using those names on another host.
 
-const cmsBaseUrl = process.env.FINAMX_PLATFORM_API_BASE!;
-const rpcId = incoming.id; // validated JSON-RPC id from the s2s webhook
-const clientAssertion = await buildClientAssertion({
-  extensionId: 'com.acme.processor',
-  privateJwk: JSON.parse(process.env.S2S_PRIVATE_JWK!),
-  kid: process.env.S2S_KID!,
-  audience: `${cmsBaseUrl.replace(/\/$/, '')}/api/v1/s2s/flow/complete`,
-});
-const outcome = await completeFlowStep({ cmsBaseUrl, clientAssertion, rpcId, result: {} });
-if (!outcome.ok) throw new Error(`Flow completion failed: ${outcome.status} ${outcome.code ?? ''}`);
-```
+The [small TypeScript completion example](../examples/complete-holdings.ts) signs with the extension's registered key. A multi-output step supplies a ref for every declared port. Use `empty` for an explicit empty business result and `error` with an agreed safe code and retryability for a failed step. Persist the chosen outcome across BFF restarts. When acknowledgement is lost, retry the same outcome with fresh sender authentication against the same owner. For work beyond the capability TTL, use the owner-authorized refresh for the same pending invocation. The platform exposes `POST /api/v2/flow/invocations/{invocationId}/token`. Reverify the refreshed token before use. Cancelled or superseded invocations must remain fenced.
 
-Send either `result` or `error`. The platform checks that the assertion's extension owns the step. Make work idempotent by `rpcId`: retries must not duplicate a side effect. Do not put user data or full step bodies into workflow IDs, logs, or the graph snapshot.
+## Worked strategy program
 
-## Host side
+AlphaBuilder Strategies reads the saved model portfolio ID and publishes a validated `holdings` artifact. A parallel source reads a dedicated paper account snapshot. Mapper joins those two references and emits a rebalance proposal or a no-trade reason. Paper Execution owns order effects and deduplication. A report Mapper combines the snapshot and execution result. Delivery sends the owner's Telegram report.
 
-The host BFF uses `createFlowDoorsClient` from `@finamx/host-bridge/server` with its host Bearer token. It can `startRun({ uh_, rootInstanceIds })`, `listRuns`, `getRun`, `putSchedule({ scheduleKey, cron, programHash, uh_, rootInstanceIds })`, `deleteSchedule`, and `trigger({ uh_, programHash?, rootInstanceIds? })`. Schedule cron is five fields and overlapping runs are skipped. The host can inspect a compiled program and run status through the flow doors. Never expose the host token to an iframe or the extension.
-
-`uh_` is a pairwise user handle, not a raw host user id. The host flow doors reject `userId`, `payload`, and `sub` fields. The extension completes through `/api/v1/s2s/flow/complete`; there is no `flow.step.complete` host method or `flow.trigger` domain method.
-
-## Verify
-
-Test the webhook with an authenticated s2s fixture, complete with the exact incoming `id`, and check the run through the host BFF. Include a duplicate delivery and a failed completion. A local `finamx-ext dev` board proves UI and topic behavior; it does not prove Temporal execution. Use a platform environment with the Flow Runner worker for an end-to-end run.
+Start with AlphaBuilder alone. Check webhook receipt → durable job → context read → artifact write → owner ACK → artifact in run history. A run in `waiting` after HTTP 2xx proves transport receipt only. Correlate by invocation ID, topic, job state and response codes. Repeat delivery and restart the BFF during a run, then test expired capability, cancelled activation, stale/missing data and an incompatible pinned schema. Verify the joined chain with paper execution before enabling a schedule, and verify a scheduled run with the board closed. The recorded AlphaBuilder smoke run reached waiting; the end-to-end AlphaBuilder chain still requires its own acceptance run.

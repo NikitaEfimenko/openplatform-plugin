@@ -147,7 +147,8 @@ finamx-ext publish                  # upload and submit for review (the key from
 - Projects that copied the old check and publish scripts follow the migration reference in
   `openplatform-ext-init` (`references/migrate-from-scripts.md`).
 - Projects created before SDK 2.3.0: add `.finamx/dev-events.ndjson` to `.gitignore`.
-- Requirements: Node 20+; use `@finamx/extension-sdk` 3.7.0+ for state, sizing and current s2s helpers (`finamx-ext` basics work on 2.2.0+). See `CHANGELOG.md`.
+- Verified npm versions: Node 20+, `@finamx/extension-sdk@3.9.1`, `@finamx/host-bridge@3.12.1`, `@finamx/bridge-protocol@3.8.0` and `@finamx/dev-host@0.6.0`.
+- For background programs, follow the [Flow V2 BFF guide](plugins/openplatform/skills/openplatform-ext-init/references/flow-runner.md) and the [host lifecycle](plugins/openplatform/skills/openplatform-host-init/resources/flow-runner.md).
 
 ## The easy path in one paragraph
 
@@ -171,6 +172,8 @@ plugins/openplatform/
   evals/<case>/                     eval cases for `claude plugin eval`
 scripts/validate.mjs                repository self-check
 scripts/check-imports.mjs           @finamx imports vs published npm packages
+scripts/check-cli.mjs               published CLI help, scaffolding and headless publish dry-run
+scripts/check-flow-example.test.mjs  Flow V2 schema, signed completion and owner ACK
 ```
 
 ## Development
@@ -178,13 +181,15 @@ scripts/check-imports.mjs           @finamx imports vs published npm packages
 ```bash
 node scripts/validate.mjs                       # frontmatter, manifests, hooks, agents, evals, secrets, links
 node --test "plugins/openplatform/hooks/test/*.test.mjs"    # hook unit tests
-npm i --no-save @finamx/host-bridge @finamx/extension-sdk @finamx/bridge-protocol react react-dom
+npm i --no-save @finamx/host-bridge@3.12.1 @finamx/extension-sdk@3.9.1 @finamx/bridge-protocol@3.8.0 jose@6 react@19 react-dom@19
 node scripts/check-imports.mjs                  # every @finamx import exists in the published npm packages
+node scripts/check-cli.mjs
+node --test scripts/check-flow-example.test.mjs
 claude plugin validate . && claude plugin validate ./plugins/openplatform   # manual: needs the `claude` CLI
 claude plugin eval ./plugins/openplatform --runs 3 --no-publish   # with/without-plugin comparison
 ```
 
-Maintainer notes: `claude plugin validate` and `claude plugin eval` need the `claude` CLI and are a manual step before a release. The 2.0.0 branch was checked with `validate.mjs` and the hook tests only: `claude plugin validate` and a real session with `claude --debug` (it shows the hooks firing) have NOT been run on it yet and are required before the release. `hooks/hooks.json` uses the shell form from the Claude Code docs (`"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs\""`, `timeout` in seconds).
+Maintainer notes: `claude plugin validate` and `claude plugin eval` need the `claude` CLI and are a manual step before a release. `hooks/hooks.json` uses the shell form from the Claude Code docs (`"command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/<file>.mjs\""`, `timeout` in seconds).
 
 ### Releasing a new version
 

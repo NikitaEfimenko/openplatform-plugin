@@ -64,8 +64,7 @@ Ask only what you cannot detect. Batches of 2 to 4. Recommended option first. Ac
     `acceptFrom: "self"`; display-only: open. How does the widget handle a refused publish
     (`onPublishRejected`)? Details: `trust.md`.
     **Durable flow.** Will a host schedule or trigger a multi-extension graph while the widget is closed? If yes,
-    the extension needs an s2s webhook, a registered public JWK for completion, and the flow contract in
-    `flow-runner.md`. A live topic subscription alone does not complete a parked run.
+    open the Flow V2 branch below.
 
 ## Batch 4: build and delivery
 
@@ -88,6 +87,25 @@ Check what the project already has (`git remote -v`, `gh auth status`, `vercel w
 `.vercel/project.json`) and say it in one line. On GitHub (or no git yet) recommend the preset **GitHub + Vercel** for
 a BFF: ask "(recommended) GitHub + Vercel / another host you already use". On GitLab or any other host keep the neutral
 path. Details and steps: `data-and-backend.md`, "Deploy preset: GitHub + Vercel".
+
+### Flow V2 and BFF branch
+
+Ask numbered questions in rounds, with a recommended answer for each. Read the pulled domain, manifest, catalog and
+deployment configuration first. Ask only questions whose dependencies are settled.
+
+- **Owner and trigger.** Which host and execution owner will run it? What starts it, and does it have to work with
+  the board closed? Recommend a manual run on the target host before adding a schedule.
+- **Data and effects.** After choosing a host, which extension owns each step, which concrete S2S request and reply
+  schemas are pinned, and whose consent covers each method? Recommend a source-only run before connecting downstream
+  effects. For strategies, ask about weight units, freshness, incomplete snapshots and the paper account.
+- **BFF and registration.** After deciding the request/response contract, who operates the HTTPS webhook and durable
+  queue? Which origin, environment and moderator register the URL, public JWK and matching `kid`? Recommend
+  separate environment keys and a server secret store. Ask for the public URL and key identifier only.
+- **Failure and acceptance.** Once the owner and BFF are chosen, decide retry window, timeout, cancellation,
+  duplicate-effect handling and the evidence required to enable scheduling. Recommend verifying an artifact and the
+  owner ACK, then testing restart and duplicate delivery.
+
+Record the choices in the plan card. Wait for the answers to each round before opening dependent questions.
 
 ## Plan card
 

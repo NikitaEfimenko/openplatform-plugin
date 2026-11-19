@@ -168,3 +168,13 @@ semver, write the changelog. New scopes require users to consent again; new exte
 | `pubsub: { publishes: ["fdc3.instrument"] }` | `surfaces.topics.publishes: [{ topicType, delivery: ["bridge"] }]` |
 | `mcpApp` block | remove; the platform projects MCP Apps from `surfaces.ui` |
 | `embedSandbox: "allow-scripts allow-popups"` | remove |
+
+## Configurable Bridge connections
+
+For a reusable transform on a host that supports explicit connectors, a wildcard input is
+`{ "topicType": "*", "schema": {}, "delivery": ["bridge"] }` and a wildcard output reference is
+`{ "topicType": "*", "delivery": ["bridge"] }`. The saved host connection binds concrete sessions,
+a topic and a channel. The host reconciles the current complete connection set with
+`PubSubBroker.setConnections`; it can inspect the effective policy before saving. Discovery methods
+come from the pulled host domain. Map values to a concrete owned schema-backed output when the
+receiver also uses a wildcard. Keep concrete request and reply topics for Flow V2.
