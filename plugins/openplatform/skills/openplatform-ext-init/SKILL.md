@@ -71,6 +71,10 @@ or none: it decides the deploy path when a backend is needed (Step 5, `reference
 
 ## Step 1: interview
 
+For programs, scheduled runs, S2S or a run waiting on a webhook, open `references/program-quickstart.md`
+before the general interview. For a stalled run, start at the last confirmed checkpoint. For a new headless
+integration, skip board usage and sizing questions.
+
 Use `references/interview.md` for the full bank and branching. The core questions, with what to recommend:
 
 1. **What should it do?** One or two sentences. This becomes `displayName` only. Do not write `description` or
@@ -90,7 +94,7 @@ Use `references/interview.md` for the full bank and branching. The core question
    - a public API with CORS: call it from the browser, declare the origin in `csp.connect`;
    - the user's own account at a third party (the user enters their token in the widget);
    - anything that needs **your** secret (API key, client secret, database): needs a backend you run.
-   See `references/data-and-backend.md`; the last option is the only one that needs a server.
+   See `references/data-and-backend.md`; server delivery and durable programs also need a backend.
 7. **Does it talk to other widgets?** Usually: listen to `fdc3.instrument` (the selected instrument) and/or send it.
    Offer only topics the pulled domain lists. Own topics are named `<extensionId>.<name>` and need a JSON Schema.
 8. **Identity:** `extensionId` as `com.<you or company>.<slug>` (lowercase, dots, hyphens). Suggest one.
@@ -100,7 +104,7 @@ Use `references/interview.md` for the full bank and branching. The core question
 10. **Delivery:** upload the build as an artifact (recommended: no hosting, what you upload is exactly what runs).
    Alternatives and when they make sense are in the `openplatform-ext-publish` skill; mention only if asked.
 
-Then show the plan card and get a yes.
+For a new build, show the plan card and get a yes.
 
 ## Step 1b: pick the host and pull its domain
 

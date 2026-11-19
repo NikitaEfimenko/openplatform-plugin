@@ -40,7 +40,8 @@ Ask these together unless the user already answered some:
 9. Must a host schedule or trigger a graph of extension steps that continues while widgets are closed? If yes, plan
    a Flow V2 step. In the next round use the Flow V2 and BFF branch in
    [the extension interview](../../openplatform-ext-init/references/interview.md). Record owner, pinned contracts,
-   webhook registration, grants, failure policy and the acceptance run in the PRD.
+   webhook registration, grants, failure policy and the acceptance run in the PRD. Use the
+   [program walkthrough](../../openplatform-ext-init/references/program-quickstart.md) to order delivery and review.
 
 Recommended answers come from facts you have already gathered: if one host is visible to the developer, recommend
 it; if the data is public and static, recommend a static widget with no backend.

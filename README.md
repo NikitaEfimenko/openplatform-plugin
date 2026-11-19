@@ -148,7 +148,7 @@ finamx-ext publish                  # upload and submit for review (the key from
   `openplatform-ext-init` (`references/migrate-from-scripts.md`).
 - Projects created before SDK 2.3.0: add `.finamx/dev-events.ndjson` to `.gitignore`.
 - Verified npm versions: Node 20+, `@finamx/extension-sdk@3.9.1`, `@finamx/host-bridge@3.12.1`, `@finamx/bridge-protocol@3.8.0` and `@finamx/dev-host@0.6.0`.
-- For background programs, follow the [Flow V2 BFF guide](plugins/openplatform/skills/openplatform-ext-init/references/flow-runner.md) and the [host lifecycle](plugins/openplatform/skills/openplatform-host-init/resources/flow-runner.md).
+- For background programs, start with the [Flow V2 program walkthrough](plugins/openplatform/skills/openplatform-ext-init/references/program-quickstart.md), then use the [Flow V2 BFF guide](plugins/openplatform/skills/openplatform-ext-init/references/flow-runner.md) and the [host lifecycle](plugins/openplatform/skills/openplatform-host-init/resources/flow-runner.md).
 
 ## The easy path in one paragraph
 

@@ -2,6 +2,11 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.5.1]
+
+- Added a host-first walkthrough for building and diagnosing Flow V2 programs and S2S integrations.
+- Expanded strategy eval criteria to cover CLI discovery and acceptance evidence at each handoff.
+
 ## [2.5.0] — 2026-11-19
 
 - Flow V2 guides and a TypeScript completion example for the AlphaBuilder strategy pattern.
