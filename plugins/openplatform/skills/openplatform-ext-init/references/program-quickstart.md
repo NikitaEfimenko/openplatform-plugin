@@ -12,7 +12,16 @@ At each handoff give the user the next action, who owns it and what evidence mar
 
 ## 1. Find the real host contract
 
-Use the portal and developer session selected for the project. If several Publishers are available, select the extension's Publisher for Publisher-scoped commands.
+Run the commands below when the authorized developer session and terminal are available. Use the portal selected
+for the project. Start with `hosts` and use a returned host ID. If several hosts fit and the user has not chosen one,
+show the candidates and ask which to target. If several Publishers are available, select the extension's Publisher
+for Publisher-scoped commands.
+
+When you cannot run the CLI, include this command block in your first answer, even when the user also asks for
+debugging or a short code example. Use the known host ID, or leave `<hostId>` and explain where to find it.
+If the CLI reports missing login, ask the developer to run `finamx-ext login` in their terminal. Resume discovery
+when access is available. If the CLI is unavailable but the developer cabinet is accessible, ask for the host's
+copied context.
 
 ```bash
 finamx-ext hosts --json

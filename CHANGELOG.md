@@ -2,6 +2,11 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.5.2]
+
+- Run host discovery when CLI access is available and show the three commands in the first reply when it is unavailable.
+- Require concrete host discovery commands in the Flow V2 strategy eval and keep the README in English.
+
 ## [2.5.1]
 
 - Added a host-first walkthrough for building and diagnosing Flow V2 programs and S2S integrations.

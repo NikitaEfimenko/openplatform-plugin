@@ -72,7 +72,10 @@ or none: it decides the deploy path when a backend is needed (Step 5, `reference
 ## Step 1: interview
 
 For programs, scheduled runs, S2S or a run waiting on a webhook, open `references/program-quickstart.md`
-before the general interview. For a stalled run, start at the last confirmed checkpoint. For a new headless
+before the general interview. Run `finamx-ext hosts --json`, `finamx-ext domain pull <hostId> --json` and
+`finamx-ext context <hostId>` when the terminal and developer session are available. Otherwise show all three
+commands in your first answer and explain which host ID to use. Include this step even when the user asks for
+a completion snippet. For a stalled run, continue from the last confirmed checkpoint. For a new headless
 integration, skip board usage and sizing questions.
 
 Use `references/interview.md` for the full bank and branching. The core questions, with what to recommend:

@@ -120,7 +120,7 @@ Hooks and agents are Claude Code features. In other agents the same steps run as
 ## Context for tools without a terminal (v0, Databutton)
 
 Run `finamx-ext context <hostId>` (SDK 2.3.0+) and paste the output into the tool, or use the button
-"Скопировать контекст" in the developer cabinet.
+"Copy context" in the developer cabinet.
 
 ## Try it
 
@@ -211,22 +211,3 @@ The `openplatform-ext-plan` approach is adapted from mattpocock/skills (MIT); se
 MIT
 
 ---
-
-## По-русски
-
-Набор скиллов для агентов (Claude Code, Codex, Cursor и любых, кто читает `SKILL.md`). Он проводит разработчика
-от пустой папки до расширения в хостах FinamX: задаёт вопросы с рекомендуемыми ответами, выбирает самый простой
-путь (статический виджет из шаблона, загрузка сборки артефактом, без своего хостинга и бэкенда), проверяет
-виджет под настоящими CSP и мостом хоста, отправляет его на портал и объясняет любые ошибки модерации и портала.
-
-В версии 2.0: скилл `openplatform-ext-plan` (PRD для набора расширений), хуки и агенты Claude Code
-(контекст хоста при старте, напоминание запустить `finamx-ext check` после правок, read-only ревьюер перед публикацией; хуки ничего не запускают), шаблон и скрипты
-заменены на `npx @finamx/extension-sdk init` и `finamx-ext`. Обновление с 1.x: удалите копии
-`.claude/skills/openplatform-*` и `.agents/skills/openplatform-*`, см. «Upgrading from 1.x». Контекст для v0 и
-Databutton: `finamx-ext context <hostId>` (SDK 2.3.0+) или кнопка «Скопировать контекст» в кабинете.
-
-Cursor: `npx skills add NikitaEfimenko/openplatform-plugin`. Каждый входной скилл сначала спрашивает, зарегистрированы ли
-вы и есть ли ключ; ключ вводится командой `npx @finamx/extension-sdk login` в вашем терминале и никогда не вставляется в чат.
-
-Установка: команды выше. Начать можно с фразы агенту:
-«Хочу сделать виджет для открытой платформы FinamX, который …».

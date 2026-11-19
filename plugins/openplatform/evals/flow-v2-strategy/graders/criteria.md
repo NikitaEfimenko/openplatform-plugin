@@ -3,7 +3,8 @@ type: llm
 weight: 1
 ---
 
-- Identifies the target host and uses `hosts`, `domain pull` and `context` to discover the real methods and scopes. Uses conditional examples when those facts are unavailable.
+- With authorized CLI access, runs `hosts --json`, `domain pull <hostId> --json`, and `context <hostId>` before relying on host methods or scopes. Without access, includes all three copyable `finamx-ext` commands in the first response and says how to pick the host ID. Merely saying to check the host domain does not meet this criterion.
+- Uses exact methods, schemas and scopes only when grounded in the selected host domain. Labels examples as conditional when the domain is unavailable.
 - Asks about owner and trigger, then resolves pinned S2S request/reply schemas, grants and data freshness.
 - Orders the flow as model and paper snapshot → proposal → paper execution → report and delivery.
 - Explains that webhook receipt and completion require distinct evidence and identifies the traces to collect.
