@@ -2,6 +2,11 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.6.1] — 2026-11-25
+
+- Verify S2S commands strictly against the released npm latest CLI, removing the temporary pending-release exception.
+- Clarify latest-package installation and the separate CMS endpoint requirement; the S2S CLI is published as SDK 3.10.2.
+
 ## [2.6.0] — 2026-11-25
 
 - Install FinamX npm SDK packages through `@latest` in workflows and CI; CLI checks use the installed release rather than a pinned SDK version.

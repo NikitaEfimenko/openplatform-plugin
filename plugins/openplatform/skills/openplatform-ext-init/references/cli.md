@@ -14,7 +14,8 @@ finamx-ext publish
 
 Global options: `--api <url>` (portal of the instance; another white-label instance by URL), `--token <key>` (legacy, not accepted by `login`), `--publisher <id>`, `--json`, `--help`, `--version`.
 
-The S2S commands require the companion CLI/CMS release; check `finamx-ext s2s --help` before use.
+The npm `latest` CLI includes the S2S commands. Install/update `@finamx/extension-sdk@latest`, then check
+`finamx-ext s2s --help` includes both commands; the selected CMS must also expose the registration endpoint.
 The `latest` tag tracks the npm release; check installed capabilities rather than assuming a version provides them.
 
 ## Commands

@@ -3,7 +3,6 @@
   "sdk": "latest",
   "global": ["--api", "--token", "--publisher", "--json", "--help", "--version"],
   "subcommands": { "domain": ["pull"], "s2s": ["keygen", "register"] },
-  "pendingCommands": ["s2s"],
   "commands": {
     "init": ["--id", "--name", "--target", "--template", "--yes", "--force"],
     "login": ["--token-stdin", "--global"],
