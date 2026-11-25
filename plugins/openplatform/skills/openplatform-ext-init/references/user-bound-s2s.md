@@ -38,21 +38,44 @@ const handler = createS2sWebhookHandler({
 
 ## Pull client (your backend -> host data)
 
-Generate an ES256 key pair; keep the private JWK in your secret store, never in the repo or the browser. The same
-registered `s2sClient` key signs Flow V2 completion assertions (`flow-runner.md`). Run from the extension project,
-replacing the quoted script path with the installed `openplatform-ext-init` skill path.
+Use this sequence for pull access and for Flow V2 completion. Explain each step before running it.
 
-```bash
-node "/path/to/openplatform-ext-init/scripts/generate-s2s-keypair.mjs" --out-dir .secrets/finamx-s2s
-```
+1. Log in with `finamx-ext login`; the developer enters the key in their terminal. Select the Publisher with
+   `finamx-ext publishers use <id>` if needed. Never ask for keys in chat.
+2. Check `finamx-ext s2s --help` includes `keygen` and `register`. These commands require the companion CLI change
+   and a CMS deployment exposing `PUT /api/v1/developer/extensions/{extensionId}/s2s-key`. Previously published
+   SDK 3.9.1 alone does not establish support. If absent, report the CLI/CMS upgrade dependency. The bundled
+   `scripts/generate-s2s-keypair.mjs` remains a generation-only fallback; it cannot register a key.
+3. Add `.secrets/` to the project's `.gitignore` **before** generation. Run:
 
-Add `.secrets/` to the extension project's `.gitignore` before running. The script creates a mode-0600
-`s2s-private.jwk.json`, `s2s-public.jwk.json` and `s2s-public.jwks.json` with matching `kid`; it refuses to overwrite
-existing files and prints paths only. Give the **single public JWK** and its `kid` to platform moderators: they register it on your extension
-record (`s2sClient.publicJwk` + `s2sClient.kid`). Send the extension ID, version, target host and deployed HTTPS
-webhook URL with the public key. Put the URL in the version manifest and keep the private key in the BFF.
-Changing the key of a published extension triggers a manual review. On rotation keep the old private key until the
-new public key is approved and active, then switch the backend secret and remove the old key.
+   ```bash
+   finamx-ext s2s keygen --out-dir .secrets/finamx-s2s
+   ```
+
+   It creates private/public JWK and public JWKS files with the same `kid`, refuses overwrites, and prints only
+   paths. The private file is mode 0600. Put it in the deployed BFF secret store; never read its content into chat,
+   logs or a browser bundle. Use different keys per environment.
+4. Deploy the HTTPS webhook and submit its URL in the extension version manifest with `finamx-ext publish`.
+   Registration needs an existing extension record. A private `push` does not enable published-only S2S or Flow.
+5. From that extension project run:
+
+   ```bash
+   finamx-ext s2s register --public-jwk .secrets/finamx-s2s/s2s-public.jwk.json
+   # Or name the extension explicitly:
+   finamx-ext s2s register com.acme.diary --public-jwk .secrets/finamx-s2s/s2s-public.jwk.json
+   ```
+
+   This uses the saved developer login and Publisher and sends only a single public ES256 JWK plus its `kid`.
+   It rejects a private JWK or JWKS file. The same registration can be retried. `--json` reports `registered`,
+   `kid` and `reviewRequired`. Registration is not proof of publication, consent or a working webhook.
+6. Confirm the published version, host availability/licence, required consent, deployed key identifier and a real
+   call. Initial registration on an already published extension flags manual review under the existing platform
+   policy; this flag is not a deferred activation queue. A changed key **or kid** on a published extension with
+   an existing key returns `S2S_KEY_ROTATION_REQUIRES_MODERATOR` (409) without replacing it. Arrange moderator
+   rotation and switch the backend secret when the intended public key is active. Never regenerate on every run.
+
+For a 401, log in again; for `PUBLISHER_REQUIRED`, select the Publisher; for 404 verify portal, extension ID,
+Publisher access and that the CMS has the new endpoint. Do not retry by sending a private key or using a host key.
 
 ```ts
 import { requestUserS2sToken, callHostMethod } from '@finamx/extension-sdk';

@@ -24,6 +24,13 @@ Write `docs/prd/<slug>/PRD.md` with these sections, in this order. Keep it short
 - Data sources and secrets: <public API, host methods, own backend; a backend only when an own secret exists>
 - Delivery: artifact upload (recommended) or hosted URL
 
+#### Flow programs
+<yes / no / undecided; plain-language example and reason; step support versus program assembly>
+<if yes: host/owner/trigger, request/reply contracts, BFF operator and durable jobs, consent/scopes, CLI keygen
+and public registration, deployed secret, moderator rotation policy, invocation/artifact/completion tasks,
+manual + duplicate/restart/cancellation + closed-board acceptance; scheduling only after acceptance>
+<each task: owner, dependencies, observable acceptance; if no, omit Flow-only tasks>
+
 #### State and control
 <per-user settings kept in `bridge.state` (schema, schemaVersion, agentVisible), BFF data keyed by `authContextStateKey`, input topic used as the agent command channel; "none" when the extension keeps no settings>
 

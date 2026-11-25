@@ -7,7 +7,7 @@ Choose Flow V2 when the program must run while the board is closed. Use live Bri
 1. Confirm the target host exposes Flow V2, the execution owner, and the host's exact method names and grants. For the platform owner, the callback is the trusted CMS HTTPS origin plus `/api/v2/flow/complete`.
 2. Declare a concrete S2S request topic, the reviewed HTTPS POST webhook at `versions[].surfaces.topics.s2sChannels.webhook.url`, and concrete schema-backed outputs. Agree on the input schema for the Flow V2 envelope and set `replyTopicType` on the subscription to the exact declared output topic. The platform compiler uses that topic name as the output port. Pin extension version, schema version and hashes when compiling the program.
    See the [headless holdings manifest](../examples/holdings-manifest.json).
-3. Deploy the BFF and give the moderator the extension ID, version, target host, webhook URL, public JWK and matching `kid`. Follow [key setup](user-bound-s2s.md). Check the approved version's route, key, host availability, licence and consent before scheduling.
+3. Deploy the BFF, submit its webhook URL in the version manifest, and register the public key with `finamx-ext s2s register --public-jwk .secrets/finamx-s2s/s2s-public.jwk.json` once the extension record exists. Published-key rotation remains moderator-managed. Follow [key setup](user-bound-s2s.md). Check the approved version's route, key, host availability, licence and consent before scheduling.
 
 ## Receive, process and complete
 

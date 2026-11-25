@@ -14,6 +14,9 @@ finamx-ext publish
 
 Global options: `--api <url>` (portal of the instance; another white-label instance by URL), `--token <key>` (legacy, not accepted by `login`), `--publisher <id>`, `--json`, `--help`, `--version`.
 
+The S2S commands require the companion CLI/CMS release; check `finamx-ext s2s --help` before use.
+SDK 3.9.1 is the previously verified baseline, not proof that these new commands are installed.
+
 ## Commands
 
 | Command | Flags | Purpose |
@@ -28,6 +31,8 @@ Global options: `--api <url>` (portal of the instance; another white-label insta
 | `serve` | `--dist`, `--port` (8787), `--manifest`, `--ancestor`, `--strict-csp` | Static server with the platform sandbox CSP. By default `http://localhost` / `http://127.0.0.1` origins of the manifest stay allowed (the platform drops them); `--strict-csp` builds the production CSP |
 | `dev` | `--port`, `--json`, `--headless`, `--open`, `--strict-csp`, `--no-watch`, `--no-poll` | Local developer host: bento board, host selector, mocks from domain schemas, bus and consent panels, s2s mock. Needs the optional `@finamx/dev-host`. Loopback only, a per-run secret, mocks only; the developer key never reaches the board. Your `watch` script is started automatically with your user's permissions (`--no-watch` skips it) |
 | `publish` | `--manifest`, `--dist`, `--entry`, `--artifact-dir`, `--artifact-entry`, `--dry-run`, `--skip-checks` | Submit the manifest (a new version on 409). Packs `./dist` only when the manifest pins no artifact and has no `embedBundleUrl` |
+| `s2s keygen` | `--out-dir <dir>`, `--kid <id>`, `--json` | Generate a local ES256 pair; private file 0600, no overwrite; ignore the secret directory first |
+| `s2s register [extensionId]` | `--public-jwk <file>`, `--kid <id>`, `--manifest <file>`, `--json` | Register only a public JWK using developer login and Publisher; existing extension required; published-key rotation is moderator-managed |
 | `status [extensionId]` | `--manifest`, `--json` | Moderation state; the id defaults to the manifest |
 | `gateway-health` | `--check <namespace>`, `--json` | Publisher-scoped MCP vendor status; `--check` makes a safe initialize probe |
 | `push` | `--manifest`, `--dist`, `--entry`, `--dry-run`, `--skip-checks` | Upload a private artifact to a linked development host |

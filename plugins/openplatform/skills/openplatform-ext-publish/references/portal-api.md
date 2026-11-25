@@ -10,6 +10,7 @@ Base: the portal, e.g. `https://openplatform.changesandbox.ru`. Auth: `Authoriza
 | GET | `/api/v1/developer/extensions` | — | 200 `{ items: [{ extensionId, displayName, status, moderatorComment, updatedAt }] }` (only this account's) |
 | GET | `/api/v1/developer/extensions/{extensionId}` | — | 200 status and moderator comment; 404 if not owned by this account |
 | GET | `/api/v1/hosts/picker` | — | 200 `{ hosts: [{ hostId, displayName, status }] }`: host ids for `desiredHostIds` |
+| PUT | `/api/v1/developer/extensions/{extensionId}/s2s-key` | `{ publicJwk, kid }` (single public ES256 JWK; developer login + Publisher) | 200 `{ registered, kid, reviewRequired }`; 409 on replacement of a published key; companion CMS deployment required |
 | GET | `/.well-known/jwks.json` | — | platform keys for verifying auth-context and s2s tokens |
 
 Account endpoints (browser UI is simpler): `/developer/register`, `/developer/dashboard`.

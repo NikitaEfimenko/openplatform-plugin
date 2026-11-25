@@ -71,6 +71,10 @@ or none: it decides the deploy path when a backend is needed (Step 5, `reference
 
 ## Step 1: interview
 
+For every new extension, explain Flow programs in plain language and ask whether this extension should be usable
+as a program step. Follow `references/flow-discovery.md`: recommend the path that fits the idea, accept “no”, and
+record the answer in the plan card. Reuse a settled PRD decision. Do this before choosing a backend or writing code.
+
 For programs, scheduled runs, S2S or a run waiting on a webhook, open `references/program-quickstart.md`
 before the general interview. Run `finamx-ext hosts --json`, `finamx-ext domain pull <hostId> --json` and
 `finamx-ext context <hostId>` when the terminal and developer session are available. Otherwise show all three
@@ -215,8 +219,10 @@ no shared-secret (HMAC) identity. Ask "what must the backend trust?" and route w
 `references/auth-context.md`.
 
 If the backend needs private host data or completes a Flow V2 step, register its ES256 public JWK and `kid` as
-`s2sClient` with the platform. Generate the pair with `scripts/generate-s2s-keypair.mjs`; keep the private file in a
-gitignored secret directory. Submit the deployed HTTPS webhook URL alongside the extension version and public key.
+`s2sClient` with the platform. Use `finamx-ext s2s keygen --out-dir .secrets/finamx-s2s`, then
+`finamx-ext s2s register --public-jwk .secrets/finamx-s2s/s2s-public.jwk.json` after the extension record exists.
+Follow `references/user-bound-s2s.md` for capability checks, secrets, registration order and rotation.
+The deployed HTTPS webhook URL belongs in the submitted version manifest.
 For durable graph steps follow `references/flow-runner.md` and use the SDK Flow V2 completion helper from the BFF.
 
 ## Step 6: verify (do not skip)

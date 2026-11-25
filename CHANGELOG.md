@@ -2,6 +2,13 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.6.0] — unreleased
+
+- Explain Flow programs in everyday language and offer every new extension author a contextual choice about step support.
+- Carry the choice into planning tickets, PRD and implementation; guide host discovery, backend ownership, consent and acceptance one decision at a time.
+- Document companion CLI `s2s keygen` and `s2s register`, developer-authenticated public JWK registration and moderator-managed published-key rotation.
+- Keep CLI/CMS release dependencies explicit; do not claim previously published SDKs provide the new commands.
+
 ## [2.5.2]
 
 - Run host discovery when CLI access is available and show the three commands in the first reply when it is unavailable.

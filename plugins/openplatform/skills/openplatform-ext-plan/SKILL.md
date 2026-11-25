@@ -4,7 +4,7 @@ description: >-
   Turns a loose product idea into a PRD for one extension or a set of extensions on the FinamX Open Platform.
   Runs rounds of numbered questions with a recommended answer, shows what already exists (catalog extensions with
   their topics, the chosen hosts' methods and topics, via finamx-ext catalog, hosts and domain pull), splits the
-  work into extensions, topics, host methods and links, and writes docs/prd/<slug>/ (MAP.md, tickets, PRD.md) as
+  work into extensions, topics, host methods and links, and writes a docs/prd/ product folder (MAP.md, tickets, PRD.md) as
   decisions are made. Use it when someone wants to plan a product, a set of extensions, several widgets that talk
   to each other, asks for a PRD, "what should I build", "which extensions already exist", "with which hosts".
   Each extension is then handed to openplatform-ext-init. For one plain widget go straight to openplatform-ext-init.
@@ -56,6 +56,12 @@ extensions, which hosts.
 Sharpen terms as they settle (domain modeling). When the user says "signal", "instrument", "portfolio" or another
 overloaded word, propose one precise term, check it against the host vocabulary once Step 2 has run, and write the
 settled meaning into the Glossary in the MAP Notes.
+
+Before choosing the split, explain Flow programs with
+[guided discovery](../openplatform-ext-init/references/flow-discovery.md) and ask whether the extensions should
+be usable as program steps. Recommend based on the idea; accept “no”. Record the decision and rationale in MAP
+and each affected extension ticket. For “yes”, carry the guide’s implementation tasks and acceptance criteria
+into the PRD and the handoff to ext-init. Distinguish step support from assembling a specific program.
 
 ## Step 2: show what already exists
 

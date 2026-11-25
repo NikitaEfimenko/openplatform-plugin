@@ -90,6 +90,9 @@ path. Details and steps: `data-and-backend.md`, "Deploy preset: GitHub + Vercel"
 
 ### Flow V2 and BFF branch
 
+Before technical questions, use [guided Flow discovery](flow-discovery.md) to explain a program, offer a contextual
+recommendation and record yes/no/undecided. Ask this for new extensions even if the user has not said “Flow”.
+
 Ask numbered questions in rounds, with a recommended answer for each. Read the pulled domain, manifest, catalog and
 deployment configuration first. Ask only questions whose dependencies are settled.
 
@@ -99,7 +102,7 @@ deployment configuration first. Ask only questions whose dependencies are settle
   schemas are pinned, and whose consent covers each method? Recommend a source-only run before connecting downstream
   effects. For strategies, ask about weight units, freshness, incomplete snapshots and the paper account.
 - **BFF and registration.** After deciding the request/response contract, who operates the HTTPS webhook and durable
-  queue? Which origin, environment and moderator register the URL, public JWK and matching `kid`? Recommend
+  queue? Which origin and environment are used? Register the public key through the developer CLI after the record exists; involve a moderator for published-key rotation. Recommend
   separate environment keys and a server secret store. Ask for the public URL and key identifier only.
 - **Failure and acceptance.** Once the owner and BFF are chosen, decide retry window, timeout, cancellation,
   duplicate-effect handling and the evidence required to enable scheduling. Recommend verifying an artifact and the
@@ -119,6 +122,7 @@ Plan
 - Store text: <confirmed description | waiting — do not write description>
 - Usage: <board how-to | none>
 - Data: <sources>; backend: <none | what and where>
+- Flow: <yes | no | undecided>; reason/example: <...>; program assembly: <in scope | not requested>
 - Talks to: subscribes <topics>; publishes <topics>
 - State and control: <bridge.state schema | BFF | none>; agent: <agentVisible, command topic | none>
 - Trust: <acceptFrom per own input; Publisher pin on BFF | none>

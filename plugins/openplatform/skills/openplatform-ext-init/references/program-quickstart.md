@@ -1,5 +1,8 @@
 # Build and verify a Flow V2 program
 
+First explain what a Flow program does and settle the developer’s choice with [guided discovery](flow-discovery.md).
+Reuse an existing PRD decision.
+
 ## Choose the route
 
 | User needs | Start here |
@@ -39,7 +42,7 @@ For AlphaBuilder, begin with **model holdings → holdings artifact**. Add the p
 
 ## 3. Register and connect the BFF
 
-Deploy the HTTPS webhook, generate an environment-specific ES256 key pair using the [key setup](user-bound-s2s.md), and place the private JWK in the BFF secret store. Submit the extension version with its webhook URL. Give the moderator the extension ID, version, target host, public JWK and matching `kid`. Confirm the approved version and host access, validate consent for the declared methods, and check that the active BFF key matches the registration.
+Deploy the HTTPS webhook, generate an environment-specific ES256 key pair using the [key setup](user-bound-s2s.md), and place the private JWK in the BFF secret store. Submit the extension version with its webhook URL. Register the public JWK with `finamx-ext s2s register --public-jwk .secrets/finamx-s2s/s2s-public.jwk.json` after the record exists. See key setup for CLI/CMS availability and moderator-managed rotation. Confirm the approved version and host access, validate consent for the declared methods, and check that the active BFF key matches the registration.
 
 The webhook verifies delivery and invocation, stores one durable job per invocation, then acknowledges receipt. The worker reads authorized context, validates and writes the artifact, and calls [`completeStep`](../examples/complete-holdings.ts) with the artifact reference. Use the [Flow V2 contract](flow-runner.md) for trust, retries and cancellation.
 
