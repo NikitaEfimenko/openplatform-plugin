@@ -43,8 +43,7 @@ Use this sequence for pull access and for Flow V2 completion. Explain each step 
 1. Log in with `finamx-ext login`; the developer enters the key in their terminal. Select the Publisher with
    `finamx-ext publishers use <id>` if needed. Never ask for keys in chat.
 2. Check `finamx-ext s2s --help` includes `keygen` and `register`. These commands require the companion CLI change
-   and a CMS deployment exposing `PUT /api/v1/developer/extensions/{extensionId}/s2s-key`. Previously published
-   SDK 3.9.1 alone does not establish support. If absent, report the CLI/CMS upgrade dependency. The bundled
+   and a CMS deployment exposing `PUT /api/v1/developer/extensions/{extensionId}/s2s-key`. Installing `@finamx/extension-sdk@latest` alone does not establish CMS support. If absent, report the CLI/CMS upgrade dependency. The bundled
    `scripts/generate-s2s-keypair.mjs` remains a generation-only fallback; it cannot register a key.
 3. Add `.secrets/` to the project's `.gitignore` **before** generation. Run:
 

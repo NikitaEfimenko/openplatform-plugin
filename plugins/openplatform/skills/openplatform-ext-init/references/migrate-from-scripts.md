@@ -23,7 +23,7 @@ and stay.
 ## Steps
 
 1. Check that `git status` is clean, so the migration is one reviewable change.
-2. Install the tools: `npm install -D @finamx/extension-sdk@^2.2.0 @finamx/dev-host`. Keep `@finamx/bridge-protocol`
+2. Install the tools: `npm install -D @finamx/extension-sdk@latest @finamx/dev-host`. Keep `@finamx/bridge-protocol`
    (runtime types). Remove `@finamx/host-bridge` and `playwright-core` from `devDependencies` only if nothing else
    imports them; `check --host` needs `playwright-core` and Chrome (`CHROME_PATH`).
 3. Replace the `package.json` scripts:
@@ -48,7 +48,7 @@ and stay.
    `finamx-ext domain pull <hostId>`. Commit `.finamx/`.
 7. Verify: `npm run build`, `finamx-ext check`, `finamx-ext check --host <hostId>`. Fix what they report; the new checks
    are against the real host domain and may find scopes or topics the host does not offer.
-8. Optional: copy `AGENTS.md` rules from a fresh `npx @finamx/extension-sdk init` scratch project so coding agents in
+8. Optional: copy `AGENTS.md` rules from a fresh `npx @finamx/extension-sdk@latest init` scratch project so coding agents in
    this repository know the new commands.
 
 Publishing is unchanged in effect: `finamx-ext publish` submits the manifest and uploads `dist/`, and answers 409 by

@@ -5,7 +5,7 @@
 | Where | Answer | Cause | Fix |
 |---|---|---|---|
 | any | network error, `fetch failed` | a proxy dropped the connection | `finamx-ext publish` does not resend a state-changing request blindly; it asks the portal and tells you to re-run |
-| any | 401 `UNAUTHORIZED` | no token, wrong token, revoked token, token of another portal | new token in the dashboard; run `npx @finamx/extension-sdk login` again and check `--api` / `FINAMX_API_URL` point to the portal that issued the key |
+| any | 401 `UNAUTHORIZED` | no token, wrong token, revoked token, token of another portal | new token in the dashboard; run `npx @finamx/extension-sdk@latest login` again and check `--api` / `FINAMX_API_URL` point to the portal that issued the key |
 | upload | 4xx with `error`/`code` | the artifact violates limits or file rules | `finamx-ext check`: ≤ 200 files, ≤ 5 MiB, allowed types, no hidden files, entry `.html` present |
 | submit | 400 `INVALID_JSON` | not JSON | — |
 | submit | 400 `INVALID_MANIFEST` + `details` | strict schema: unknown key (`kind`, `widget`, `pubsub`, `hosts`), bad extensionId, missing `platformSupport`/`description`, bad semver, `artifact` together with `embedBundleUrl`, `embedEntryPath` with an artifact, bad csp origin, disallowed sandbox token | read `details[].path`; `finamx-ext check` reports the same in plain words |

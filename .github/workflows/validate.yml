@@ -15,7 +15,7 @@ jobs:
         run: node --test "plugins/openplatform/hooks/test/*.test.mjs" "plugins/openplatform/skills/openplatform-ext-init/scripts/*.test.mjs"
       - name: '@finamx imports exist in the published npm packages'
         run: |
-          npm i --no-save --no-audit --no-fund --no-package-lock @finamx/host-bridge@3.12.1 @finamx/extension-sdk@3.9.1 @finamx/bridge-protocol@3.8.0 jose@6 react@19 react-dom@19
+          npm i --no-save --no-audit --no-fund --no-package-lock @finamx/host-bridge@latest @finamx/extension-sdk@latest @finamx/bridge-protocol@latest jose@6 react@19 react-dom@19
           node scripts/check-imports.mjs
       - name: Published CLI and Flow V2 example
         run: |

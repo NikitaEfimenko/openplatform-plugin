@@ -2,7 +2,9 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
-## [2.6.0] — unreleased
+## [2.6.0] — 2026-11-25
+
+- Install FinamX npm SDK packages through `@latest` in workflows and CI; CLI checks use the installed release rather than a pinned SDK version.
 
 - Explain Flow programs in everyday language and offer every new extension author a contextual choice about step support.
 - Carry the choice into planning tickets, PRD and implementation; guide host discovery, backend ownership, consent and acceptance one decision at a time.

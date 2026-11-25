@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Every `import { … } from '@finamx/…'` in the skills (code and examples in .md) must exist in the published npm
 // packages: runtime names are imported for real, type-only names are looked up in the packages' .d.ts files.
-//   npm i --no-save @finamx/host-bridge @finamx/extension-sdk @finamx/bridge-protocol react react-dom
+//   npm i --no-save @finamx/host-bridge@latest @finamx/extension-sdk@latest @finamx/bridge-protocol@latest react react-dom
 //   node scripts/check-imports.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';

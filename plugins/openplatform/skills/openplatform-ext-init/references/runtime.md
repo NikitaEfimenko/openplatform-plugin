@@ -40,7 +40,7 @@ bridge.context.publish('fdc3.instrument', { type: 'fdc3.instrument', id: { ticke
   to `bridge.state` (below).
 - Decisions (when to use `acceptFrom`, how to treat `meta.relation`): `trust.md`.
 
-## Instance state (`bridge.state`, SDK 3.5.0+)
+## Instance state (`bridge.state`, latest SDK)
 
 Declare `surfaces.ui.state` (mandatory JSON `schema`, `schemaVersion`, optional `agentVisible`); without it
 `bridge.state` answers `STATE_SCHEMA_REQUIRED`. Decisions (where data lives, filter pattern, BFF keys, agent control): `state.md`.

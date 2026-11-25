@@ -8,7 +8,7 @@ framework; add the platform pieces from a freshly generated project.
 Generate a scratch project once and copy from it, then delete it:
 
 ```bash
-npx @finamx/extension-sdk init ../ext-scratch --id com.example.scratch --name Scratch --target templates --yes
+npx @finamx/extension-sdk@latest init ../ext-scratch --id com.example.scratch --name Scratch --target templates --yes
 ```
 
 Take `src/boot.js` and `src/host-tokens.js` from `ext-scratch`, `src/config.js` as a model, the variable block and the

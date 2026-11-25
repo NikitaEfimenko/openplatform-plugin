@@ -64,7 +64,7 @@ const claims = await verifyPlatformClaim(token, 'platform.auth_context.v1', 'com
 });
 ```
 
-`expectedProfile` is mandatory, and so is `expectedAud` or `expectedPublisher` (SDK 3.6.0+): without either, any
+`expectedProfile` is mandatory, and so is `expectedAud` or `expectedPublisher` (latest SDK): without either, any
 platform token would pass. Pin the Publisher tag (cabinet, team page or `finamx-ext publishers`) so another
 Publisher cannot replay its own token:
 

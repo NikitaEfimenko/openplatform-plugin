@@ -34,7 +34,7 @@ output reference: `references/cli.md`.
 - Explain the why when a platform rule forces a choice (CSP, sandbox, review). Developers accept constraints they
   understand and fight the ones they do not.
 - Never ask the developer to paste a token or password into the chat. The developer key goes through
-  `npx @finamx/extension-sdk login` (hidden prompt, typed by the developer in their own terminal); `--token-stdin` and
+  `npx @finamx/extension-sdk@latest login` (hidden prompt, typed by the developer in their own terminal); `--token-stdin` and
   `FINAMX_DEV_TOKEN` are only the CI fallback. You never print the key or open `.env` / the credentials file. Never
   ask for or use a host key (`fxh_...`).
 
@@ -45,8 +45,8 @@ Before anything else ask one question: «Вы уже зарегистриров�
 - **No:** give the links and keep going with the interview while they register. The portal is the instance the
   developer works with (default `https://openplatform.changesandbox.ru`; for another white-label instance ask for its
   URL): registration `<portal>/ru/developer/register` (`/en/...` for English), key `<portal>/ru/developer/dashboard#key`.
-- **Yes:** ask them to run, in their own terminal and in the project folder, `npx @finamx/extension-sdk login` and type
-  the key into the hidden prompt. For another instance: `npx @finamx/extension-sdk --api <url> login`; the CLI remembers
+- **Yes:** ask them to run, in their own terminal and in the project folder, `npx @finamx/extension-sdk@latest login` and type
+  the key into the hidden prompt. For another instance: `npx @finamx/extension-sdk@latest --api <url> login`; the CLI remembers
   that portal for later commands. Then confirm with `finamx-ext hosts` (it prints no key).
 
 The key never goes into the chat. If the developer pastes one anyway, say so, tell them to revoke it in the cabinet and
@@ -58,7 +58,7 @@ Check the working directory and report in one line what you found:
 
 | Found | Path |
 |---|---|
-| Nothing, or no web project | new extension: `npx @finamx/extension-sdk init <dir>` (Step 2) |
+| Nothing, or no web project | new extension: `npx @finamx/extension-sdk@latest init <dir>` (Step 2) |
 | `manifest.json` with `versions[].surfaces` and `finamx-ext` in `package.json` | existing extension: run the checks (Step 6), fix, then publish |
 | A project created from the old plugin template (it has its own copies of the platform checks) | migrate to the CLI: `references/migrate-from-scripts.md` |
 | `manifest.json` with `kind`, `widget`, flat `pubsub` | old format: migrate (`references/manifest.md`, "Old formats") |
@@ -118,7 +118,7 @@ For a new build, show the plan card and get a yes.
 The host's methods, topics and scopes are published by the platform; read them, do not guess and do not ask anyone.
 
 1. Step 0 settled the key. If `finamx-ext hosts` says there is none, ask the developer to run
-   `npx @finamx/extension-sdk login` themselves. Never take the key in the chat.
+   `npx @finamx/extension-sdk@latest login` themselves. Never take the key in the chat.
 2. `finamx-ext hosts --json`: hosts visible to the developer's key, and whether the local manifest `works`, is
    `missing` something or `needs_access`.
 3. `finamx-ext domain pull <hostId>` (or `finamx-ext domain pull templates` when no host is chosen yet). It writes
@@ -137,7 +137,7 @@ Details and the layout of `.finamx/`: `references/host-domain.md`.
 New extension, in an empty folder:
 
 ```bash
-npx @finamx/extension-sdk init <dir> --id com.<you>.<slug> --name "<name>" --target <hostId|templates> --yes
+npx @finamx/extension-sdk@latest init <dir> --id com.<you>.<slug> --name "<name>" --target <hostId|templates> --yes
 cd <dir> && npm install && npm run build
 ```
 
@@ -267,7 +267,7 @@ The exact steps are in `references/agent-loop.md`. Never run `publish` or `login
 ## Step 7: hand off to publishing
 
 When the checks pass, continue with the **openplatform-ext-publish** skill (account and key, upload, review,
-new versions, errors). If that skill is not available, the short path is: `npx @finamx/extension-sdk login`, then
+new versions, errors). If that skill is not available, the short path is: `npx @finamx/extension-sdk@latest login`, then
 `npm run publish:ext` (`finamx-ext publish`), then `finamx-ext status`.
 
 ## Checklist before handing off

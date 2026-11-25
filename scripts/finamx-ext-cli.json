@@ -1,8 +1,9 @@
 {
-  "comment": "Commands and flags of the finamx-ext CLI (@finamx/extension-sdk 3.9.1). scripts/validate.mjs fails when a skill, agent or the README names a command or flag that is not listed here. Keep it equal to the CLI's own flag table when the SDK changes.",
-  "sdk": "3.9.1",
+  "comment": "Commands and flags of the finamx-ext CLI (@finamx/extension-sdk@latest). scripts/validate.mjs fails when a skill, agent or the README names a command or flag that is not listed here. Keep it equal to the CLI's own flag table when the SDK changes.",
+  "sdk": "latest",
   "global": ["--api", "--token", "--publisher", "--json", "--help", "--version"],
-  "subcommands": { "domain": ["pull"] },
+  "subcommands": { "domain": ["pull"], "s2s": ["keygen", "register"] },
+  "pendingCommands": ["s2s"],
   "commands": {
     "init": ["--id", "--name", "--target", "--template", "--yes", "--force"],
     "login": ["--token-stdin", "--global"],
@@ -15,6 +16,7 @@
     "dev": ["--port", "--no-watch", "--strict-csp", "--open", "--headless", "--no-poll"],
     "publish": ["--manifest", "--dist", "--entry", "--artifact-dir", "--artifact-entry", "--dry-run", "--skip-checks"],
     "status": ["--manifest"],
+    "s2s": ["--out-dir", "--kid", "--public-jwk", "--manifest"],
     "gateway-health": ["--check"],
     "publishers": [],
     "push": ["--manifest", "--dist", "--entry", "--dry-run", "--skip-checks"],

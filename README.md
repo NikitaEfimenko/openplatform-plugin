@@ -119,7 +119,7 @@ Hooks and agents are Claude Code features. In other agents the same steps run as
 
 ## Context for tools without a terminal (v0, Databutton)
 
-Run `finamx-ext context <hostId>` (SDK 2.3.0+) and paste the output into the tool, or use the button
+Run `finamx-ext context <hostId>` and paste the output into the tool, or use the button
 "Copy context" in the developer cabinet.
 
 ## Try it
@@ -133,8 +133,8 @@ I want to build a FinamX widget that shows news for the instrument selected in n
 The agent asks a few questions (each with a recommended option), writes a plan and runs:
 
 ```bash
-npx @finamx/extension-sdk login     # type the developer key into the hidden prompt (never into the chat)
-npx @finamx/extension-sdk init      # scaffold the project
+npx @finamx/extension-sdk@latest login     # type the developer key into the hidden prompt (never into the chat)
+npx @finamx/extension-sdk@latest init      # scaffold the project
 finamx-ext domain pull <hostId>     # the host's real topics, methods and scopes
 npm run dev                         # local dev host with an event log
 finamx-ext check --host <hostId>    # manifest, CSP, topics and scopes against the host domain
@@ -146,9 +146,9 @@ finamx-ext publish                  # upload and submit for review (the key from
 - Remove project copies of the old skills: `.claude/skills/openplatform-*` and `.agents/skills/openplatform-*`.
 - Projects that copied the old check and publish scripts follow the migration reference in
   `openplatform-ext-init` (`references/migrate-from-scripts.md`).
-- Projects created before SDK 2.3.0: add `.finamx/dev-events.ndjson` to `.gitignore`.
-- New S2S CLI registration workflow requires the companion CLI release and CMS `/s2s-key` deployment; check `finamx-ext s2s --help`. The versions below are the previously verified baseline.
-- Verified npm versions: Node 20+, `@finamx/extension-sdk@3.9.1`, `@finamx/host-bridge@3.12.1`, `@finamx/bridge-protocol@3.8.0` and `@finamx/dev-host@0.6.0`.
+- For older projects: add `.finamx/dev-events.ndjson` to `.gitignore`.
+- New S2S CLI registration workflow requires the companion CLI release and CMS `/s2s-key` deployment; check `finamx-ext s2s --help`. Install SDK packages from the npm `latest` tag; verify required capabilities with the installed CLI.
+- Node 20+; npm packages: `@finamx/extension-sdk@latest`, `@finamx/host-bridge@latest`, `@finamx/bridge-protocol@latest` and `@finamx/dev-host@latest`.
 - For background programs, start with the [Flow V2 program walkthrough](plugins/openplatform/skills/openplatform-ext-init/references/program-quickstart.md), then use the [Flow V2 BFF guide](plugins/openplatform/skills/openplatform-ext-init/references/flow-runner.md) and the [host lifecycle](plugins/openplatform/skills/openplatform-host-init/resources/flow-runner.md).
 
 ## The easy path in one paragraph
@@ -182,7 +182,7 @@ scripts/check-flow-example.test.mjs  Flow V2 schema, signed completion and owner
 ```bash
 node scripts/validate.mjs                       # frontmatter, manifests, hooks, agents, evals, secrets, links
 node --test "plugins/openplatform/hooks/test/*.test.mjs"    # hook unit tests
-npm i --no-save @finamx/host-bridge@3.12.1 @finamx/extension-sdk@3.9.1 @finamx/bridge-protocol@3.8.0 jose@6 react@19 react-dom@19
+npm i --no-save @finamx/host-bridge@latest @finamx/extension-sdk@latest @finamx/bridge-protocol@latest jose@6 react@19 react-dom@19
 node scripts/check-imports.mjs                  # every @finamx import exists in the published npm packages
 node scripts/check-cli.mjs
 node --test scripts/check-flow-example.test.mjs

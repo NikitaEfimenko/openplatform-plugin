@@ -24,7 +24,7 @@ secret lives on a server you run. Everything else can stay in the browser, which
 - Never a shared "widget key" that the browser sends to your server: anyone can copy it from the bundle. Identify
   the caller with the platform auth context instead.
 - Your server keeps its secrets in its own environment. The platform does not store your secrets.
-- The publisher developer key is for submitting only. It is entered with `npx @finamx/extension-sdk login` (hidden prompt),
+- The publisher developer key is for submitting only. It is entered with `npx @finamx/extension-sdk@latest login` (hidden prompt),
   never in code, never in the chat. `FINAMX_DEV_TOKEN` in a CI secret store is the only other place.
 
 ## User-entered tokens (no backend)

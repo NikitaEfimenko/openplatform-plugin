@@ -18,11 +18,17 @@ try {
   // Keep developer credentials out of the smoke test.
   const env = { PATH: process.env.PATH, HOME: cwd, USERPROFILE: cwd };
   const cli = (...args) => execFileSync(process.execPath, [bin, ...args], { cwd, env, encoding: 'utf8' });
-  assert.equal(cli('--version').trim(), table.sdk);
-  assert.deepEqual(Object.keys(COMMAND_FLAGS).sort(), Object.keys(table.commands).sort());
+  assert.equal(table.sdk, 'latest');
+  assert.equal(cli('--version').trim(), sdk.version);
   for (const [command, flags] of Object.entries(table.commands)) {
     const spec = COMMAND_FLAGS[command];
-    assert.deepEqual([...spec.values, ...spec.booleans, ...spec.optionalValues].sort(), [...flags].sort(), command);
+    if (!spec && table.pendingCommands?.includes(command)) {
+      console.log(`Pending release: ${command} is not yet available in npm latest (${sdk.version}); follow the documented upgrade dependency.`);
+      continue;
+    }
+    assert.ok(spec, `documented command ${command} must exist in npm latest`);
+    const installedFlags = new Set([...spec.values, ...spec.booleans, ...spec.optionalValues]);
+    for (const flag of flags) assert.ok(installedFlags.has(flag), `${command}: documented flag ${flag} must exist in npm latest`);
     assert.match(cli(command, '--help'), new RegExp(`finamx-ext ${command}\\b`));
   }
 

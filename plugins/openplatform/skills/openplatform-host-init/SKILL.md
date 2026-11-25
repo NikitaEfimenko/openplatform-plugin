@@ -25,7 +25,7 @@ environment (`FINAMX_HOST_TOKEN`), never in the browser bundle and never in the 
 to the portal (`<portal>/ru/developer/register`, `/en/...` for English; `<portal>` is the instance, default
 `https://openplatform.changesandbox.ru`, ask for the URL of another white-label instance) and to the platform admin for
 the host record. If a developer of this host also wants to build an extension, they sign in to the cabinet and run
-`npx @finamx/extension-sdk login` in their own terminal (hidden prompt). If anybody pastes a key into the chat, tell
+`npx @finamx/extension-sdk@latest login` in their own terminal (hidden prompt). If anybody pastes a key into the chat, tell
 them to revoke it and issue a new one, and do not repeat it.
 
 ## Clarification (ask before coding)
@@ -58,7 +58,7 @@ If a package version is missing on npm, stop and report it; do not copy package 
 ### 1. Install
 
 ```bash
-npm install @finamx/bridge-protocol@^2.0.0 @finamx/host-bridge@^2.0.0
+npm install @finamx/bridge-protocol@latest @finamx/host-bridge@latest
 ```
 
 Finance vocabulary is **data**, not a package: insert the `finamx-fibo@1` template (step 3). Do not import vocabulary constants from packages.

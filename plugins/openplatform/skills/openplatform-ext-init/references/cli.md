@@ -1,12 +1,12 @@
 # finamx-ext CLI reference
 
-`finamx-ext` ships with `@finamx/extension-sdk` (SDK 3.9.1 verified, Node 20+). Use it through the project scripts or
-`npx @finamx/extension-sdk <command>` before the package is installed. For a reproducible run use `npx @finamx/extension-sdk@3.9.1 <command>`.
+`finamx-ext` ships with `@finamx/extension-sdk` (npm `latest`, Node 20+). Use it through the project scripts or
+`npx @finamx/extension-sdk@latest <command>` before the package is installed. To invoke the current npm release use `npx @finamx/extension-sdk@latest <command>`.
 
 ```bash
-npx @finamx/extension-sdk init my-widget
+npx @finamx/extension-sdk@latest init my-widget
 cd my-widget && npm install
-npx @finamx/extension-sdk login     # the developer types the key into the hidden prompt, never into the chat
+npx @finamx/extension-sdk@latest login     # the developer types the key into the hidden prompt, never into the chat
 finamx-ext hosts
 finamx-ext domain pull <hostId>
 finamx-ext publish
@@ -15,7 +15,7 @@ finamx-ext publish
 Global options: `--api <url>` (portal of the instance; another white-label instance by URL), `--token <key>` (legacy, not accepted by `login`), `--publisher <id>`, `--json`, `--help`, `--version`.
 
 The S2S commands require the companion CLI/CMS release; check `finamx-ext s2s --help` before use.
-SDK 3.9.1 is the previously verified baseline, not proof that these new commands are installed.
+The `latest` tag tracks the npm release; check installed capabilities rather than assuming a version provides them.
 
 ## Commands
 
@@ -40,7 +40,7 @@ SDK 3.9.1 is the previously verified baseline, not proof that these new commands
 | `unlink <hostId>` | — | Revoke a developer link |
 | `publishers [use <id>]` | — | List Publisher memberships or select the default Publisher |
 | `analytics` | `--extension`, `--from`, `--to`, `--host`, `--version`, `--method`, `--kind`, `--group-by`, `--json` | Publisher analytics with privacy thresholds |
-| `context [<hostId>\|templates]` | `--remote`, `--json` | (SDK 2.3.0 and newer) print the host context as Markdown for tools that cannot read files. Reads the pulled copy in `.finamx/domain/`; `--remote` fetches the domain from the portal with the developer key instead and writes nothing. Without a target: the only pulled host (several are an error); with nothing pulled, `--remote` means `templates` and the offline form fails |
+| `context [<hostId>\|templates]` | `--remote`, `--json` | print the host context as Markdown for tools that cannot read files. Reads the pulled copy in `.finamx/domain/`; `--remote` fetches the domain from the portal with the developer key instead and writes nothing. Without a target: the only pulled host (several are an error); with nothing pulled, `--remote` means `templates` and the offline form fails |
 
 Template npm scripts: `build` (`node build.mjs`), `watch`, `dev` (`finamx-ext dev`), `check` (`finamx-ext check`),
 `check:host` (`node build.mjs && finamx-ext check --host`), `publish:ext` (`npm run build && finamx-ext publish`),
@@ -82,7 +82,7 @@ The portal is resolved from `--api`, `FINAMX_API_URL` in the process environment
 
 Get a developer key in the portal's developer cabinet (register, then generate an API token). Never commit the key.
 
-**Login is the primary way to authenticate.** The developer runs `npx @finamx/extension-sdk login` in their own terminal
+**Login is the primary way to authenticate.** The developer runs `npx @finamx/extension-sdk@latest login` in their own terminal
 and types the key into the hidden prompt; the agent never sees it. `--token-stdin` and `FINAMX_DEV_TOKEN` are only the CI
 fallback (a secret store feeding the job), not what you tell a person to do.
 

@@ -141,7 +141,7 @@ for (const f of walk(ROOT)) {
 const MIGRATION_REF = join(PLUGIN, 'skills/openplatform-ext-init/references/migrate-from-scripts.md');
 for (const sk of skills) {
   const tpl = join(skillsDir, sk, 'assets/template');
-  if (existsSync(tpl)) err(tpl, 'bundled template must not come back (projects use `npx @finamx/extension-sdk init`)');
+  if (existsSync(tpl)) err(tpl, 'bundled template must not come back (projects use `npx @finamx/extension-sdk@latest init`)');
 }
 for (const f of walk(PLUGIN)) {
   if (f === MIGRATION_REF || !/\.(md|mjs|js|ts|tsx|json|ya?ml|txt)$/.test(f)) continue;
