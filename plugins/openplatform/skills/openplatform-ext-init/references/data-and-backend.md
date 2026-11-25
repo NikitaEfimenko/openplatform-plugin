@@ -44,7 +44,7 @@ Good for "connect your own account" widgets (e.g. a trading account token the us
 3. Authenticate requests with the platform auth context: set `hostBridge.requiresAuthContext: true`, request
    `auth.context`, call `resolveAuthContext(bridge, { jwksUrl, expectedAud: EXTENSION_ID })` in the widget and send
    the resulting token as `Authorization: Bearer`; the BFF verifies it with `verifyPlatformClaim` against the
-   platform JWKS (`<portal>/.well-known/jwks.json`). Details: `auth-context.md`.
+   platform JWKS (`<portal>/op/jwks`). Details: `auth-context.md`.
 4. The claim proves the platform session, not access to a third-party API: the BFF still does its own upstream
    auth (OAuth with PKCE started in a popup, server-side code exchange).
 

@@ -21,7 +21,7 @@ Write `docs/prd/<slug>/PRD.md` with these sections, in this order. Keep it short
 - Topics subscribed: host topics (no schema of yours) and neighbour topics
 - Host methods: `<method>` with `requiredScope`
 - capabilitiesRequested: <list, only what is needed>
-- Data sources and secrets: <public API, host methods, own backend; a backend only when an own secret exists>
+- Data sources and secrets: <public API, host methods, own backend; backend required for own secrets, S2S reception or durable Flow steps>
 - Delivery: artifact upload (recommended) or hosted URL
 
 #### Flow programs

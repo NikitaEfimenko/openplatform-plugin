@@ -60,22 +60,46 @@ test('holdings example pins its declared schemas and completes with an audience-
     trust: { executionOwner: expected.executionOwner, hostId: expected.hostId, issuer,
       key: ownerKey.publicKey, callbackUrl, callbackAudience: callbackUrl },
   });
+  await assert.rejects(() => verifyFlowStepInvocation(invocationToken, {
+    expected: { ...expected, hostId: 'com.acme.other' },
+    trust: { executionOwner: expected.executionOwner, hostId: expected.hostId, issuer,
+      key: ownerKey.publicKey, callbackUrl, callbackAudience: callbackUrl },
+  }));
+  await assert.rejects(() => verifyFlowStepInvocation(invocationToken, {
+    expected,
+    trust: { executionOwner: expected.executionOwner, hostId: expected.hostId, issuer,
+      key: senderKey.publicKey, callbackUrl, callbackAudience: callbackUrl },
+  }));
+  let acknowledgement = 'valid';
+  const assertionIds = new Set();
   const transport = t.mock.method(globalThis, 'fetch', async (url, init) => {
     assert.equal(String(url), callbackUrl);
     const [scheme, assertion] = new Headers(init.headers).get('authorization').split(' ');
     assert.equal(scheme, 'Bearer');
-    const { protectedHeader } = await jwtVerify(assertion, senderKey.publicKey, {
+    const { protectedHeader, payload } = await jwtVerify(assertion, senderKey.publicKey, {
       audience: callbackUrl, issuer: expected.extensionId, subject: expected.extensionId,
     });
     assert.equal(protectedHeader.kid, kid);
+    assert.ok(payload.jti);
+    assert.ok(!assertionIds.has(payload.jti), 'completion retries need fresh sender authentication');
+    assertionIds.add(payload.jti);
     const { protocol, invocationId, outcome } = JSON.parse(init.body);
     assert.equal(protocol, 'finamx.flow.completion.v2');
     assert.equal(invocationId, expected.invocationId);
     assert.deepEqual(outcome, { status: 'done', outputs: { [output.topicType]: { ref: delivery.executionContextRef } } });
+    if (acknowledgement === 'receipt-only') return Response.json({ accepted: true });
+    if (acknowledgement === 'wrong-invocation') return Response.json({ protocol, ok: true, invocationId: 'other' });
     return Response.json({ protocol, ok: true, invocationId });
   });
   const privateJwk = await exportJWK(senderKey.privateKey);
   assert.deepEqual(await completeHoldings(context, output.topicType, delivery.executionContextRef, { privateJwk, kid }),
     { ok: true, invocationId: expected.invocationId });
   assert.equal(transport.mock.callCount(), 1);
+  for (acknowledgement of ['receipt-only', 'wrong-invocation']) {
+    await assert.rejects(() => completeHoldings(context, output.topicType, delivery.executionContextRef, { privateJwk, kid }));
+  }
+  acknowledgement = 'valid';
+  assert.deepEqual(await completeHoldings(context, output.topicType, delivery.executionContextRef, { privateJwk, kid }),
+    { ok: true, invocationId: expected.invocationId });
+  assert.equal(assertionIds.size, 4);
 });

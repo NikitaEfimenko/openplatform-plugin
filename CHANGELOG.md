@@ -2,6 +2,14 @@
 
 All notable changes to the `openplatform` plugin. Format: Keep a Changelog.
 
+## [2.6.2] — 2026-11-25
+
+- Fix first-submission sequencing: create the extension record, register the public JWK, confirm moderation and host access, then prove a manual Flow V2 run before scheduling.
+- Explain Publisher ownership and write roles in publishing; require a backend for durable Flow steps even without third-party secrets.
+- Point CMS-issued token and platform Flow invocation verification to CMS-only `/op/jwks`.
+- Exercise the published S2S CLI against an isolated local API: saved login and Publisher, usable key pair, public-only registration, exact retries, private/JWKS rejection and moderator rotation refusal.
+- Extend the Flow V2 example check to reject wrong binding/signing authority and receipt-only or mismatched ACKs; verify fresh sender authentication on retry.
+
 ## [2.6.1] — 2026-11-25
 
 - Verify S2S commands strictly against the released npm latest CLI, removing the temporary pending-release exception.

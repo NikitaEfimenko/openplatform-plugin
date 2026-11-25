@@ -22,10 +22,6 @@ try {
   assert.equal(cli('--version').trim(), sdk.version);
   for (const [command, flags] of Object.entries(table.commands)) {
     const spec = COMMAND_FLAGS[command];
-    if (!spec && table.pendingCommands?.includes(command)) {
-      console.log(`Pending release: ${command} is not yet available in npm latest (${sdk.version}); follow the documented upgrade dependency.`);
-      continue;
-    }
     assert.ok(spec, `documented command ${command} must exist in npm latest`);
     const installedFlags = new Set([...spec.values, ...spec.booleans, ...spec.optionalValues]);
     for (const flag of flags) assert.ok(installedFlags.has(flag), `${command}: documented flag ${flag} must exist in npm latest`);

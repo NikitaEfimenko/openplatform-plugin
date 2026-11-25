@@ -185,7 +185,7 @@ node --test "plugins/openplatform/hooks/test/*.test.mjs"    # hook unit tests
 npm i --no-save @finamx/host-bridge@latest @finamx/extension-sdk@latest @finamx/bridge-protocol@latest jose@6 react@19 react-dom@19
 node scripts/check-imports.mjs                  # every @finamx import exists in the published npm packages
 node scripts/check-cli.mjs
-node --test scripts/check-flow-example.test.mjs
+node --test scripts/check-flow-example.test.mjs scripts/check-s2s-cli.test.mjs
 claude plugin validate . && claude plugin validate ./plugins/openplatform   # manual: needs the `claude` CLI
 claude plugin eval ./plugins/openplatform --runs 3 --no-publish   # with/without-plugin comparison
 ```

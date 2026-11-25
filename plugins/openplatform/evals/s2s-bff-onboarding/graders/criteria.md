@@ -10,3 +10,6 @@ weight: 1
 - Keeps private keys in environment-specific server secret stores and verifies that the active key matches the registry.
 - Uses host discovery and consent-gated token minting, and calls the CMS-returned endpoint.
 - Includes a test for verified inbound delivery and a successful host method or an explicit consent refusal.
+
+- For a brand-new extension, creates the record by submitting the version before registering the public JWK. Does not require live Flow acceptance before that first submission; keeps publication, host access and manual-run evidence as later readiness checkpoints.
+- Uses CMS-only `/op/jwks` for CMS-issued tokens, and never treats host identity keys as a CMS signing authority.

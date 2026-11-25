@@ -55,24 +55,27 @@ start the reviewer with the project root and the host ids. Elsewhere do the revi
    `fromCache` is not used as storage; BFF keys come only from `authContextStateKey`, `onConsentRevoked` is idempotent.
 8. Trust: `acceptFrom` is decided for every own input, `onPublishRejected` is handled, the BFF pins `expectedPublisher`
    or `expectedAud`.
-9. If backend pull or Flow V2 completion is used, register only the public `s2sClient` JWK and matching `kid`;
-   keep the private JWK in the BFF secret store. Submit the deployed HTTPS webhook URL in the version manifest.
-   For Flow V2 confirm the registered key, concrete request/output schemas and the owner ACK in a manual run.
+9. If backend pull or Flow V2 completion is used, prepare the deployed HTTPS webhook, concrete request/output
+   schemas and an environment-specific key pair; keep the private JWK in the BFF secret store. Follow
+   [key setup](../openplatform-ext-init/references/user-bound-s2s.md). On first submission the extension record
+   may not exist yet: register the public JWK after submission (Step 5), then verify a manual Flow run after
+   publication and host access. Do not require those later checkpoints before creating the record.
 
 Show the user the result and wait for their explicit confirmation. Never run `finamx-ext publish` without it.
 
 ## 2. Account and key
 
-1. Register at `<portal>/developer/register` (email, password, name). One account per publisher; the account that
-   submits an `extensionId` first owns it for good.
-2. Cabinet (`<portal>/developer/dashboard`) -> generate a developer key. It is shown once.
+1. Register at `<portal>/ru/developer/register` (`/en/...` for English). Extensions belong to a Publisher;
+   several developers can work in one Publisher, and a developer can belong to several. Select the intended
+   Publisher with `finamx-ext publishers use <id>` after login; a `viewer` cannot submit or register keys.
+2. Cabinet (`<portal>/ru/developer/dashboard#key`) -> generate a developer key. It is shown once.
 3. The developer runs `npx @finamx/extension-sdk@latest login` in their own terminal and types the key into the hidden prompt
    (another instance: `npx @finamx/extension-sdk@latest --api <url> login`, remembered afterwards). `--token-stdin` and
    `FINAMX_DEV_TOKEN` are only the CI fallback. Never ask for the key in the chat, never paste or print it. Host keys
    are refused by the CLI and must never be used here.
 
 Key order: `--token`, `FINAMX_DEV_TOKEN`, `.env`, the stored credentials. Portal order: `--api`, `FINAMX_API_URL`, project `.env`, the stored default portal, the built-in default. Check it without printing it:
-`npx finamx-ext status` answers 401 for a bad key and 404 if this account does not own the extension.
+`npx finamx-ext status` answers 401 for a bad key and 404 if the extension is missing or inaccessible in the selected Publisher.
 
 ## 3. Choose the delivery mode
 
@@ -113,13 +116,30 @@ Safety stops, never work around them:
 - `PORTAL_NOT_CONFIRMED`: a key from the environment is not sent to a portal that is named only by `.env`. Ask the
   user to pass `--api <url>` explicitly. Never edit `.env` to get around it.
 
-## 5. After submitting: what happens
+## 5. After submitting: register the key and verify readiness
+
+For backend pull or Flow V2, the successful submission creates the record needed for registration. From the same
+extension project and selected Publisher run:
+
+```bash
+finamx-ext s2s register --public-jwk .secrets/finamx-s2s/s2s-public.jwk.json --json
+```
+
+Use the single public JWK, not the private file or public JWKS. Explain: “The private key stays on your server;
+this command sends the platform only the public key that recognises your server's signature.” The response must
+report `registered: true` and the expected `kid`. An exact retry is safe. `reviewRequired` reports manual review;
+it is not proof of publication or a deferred activation queue. Rotation of an existing published key needs a
+moderator; do not generate a new pair to work around a 409. Details: [key setup](../openplatform-ext-init/references/user-bound-s2s.md).
 
 1. Status `in_review`. The moderator checks the manifest, the requested scopes and every external domain
    (`csp.connect/resource/frame`, `embedBundleUrl`, `surfaces.mcp.url`), approves the domains, then publishes.
 2. Status `published`. The extension is still invisible in hosts until the moderator enables it for a host
    (`desiredHostIds` is only a wish).
 3. The user adds it in the host and consents to the scopes.
+4. For Flow V2, verify the deployed key and one manual run through durable job, saved result and owner ACK;
+   prove duplicate/restart/cancellation handling and closed-board execution before enabling a schedule. Follow
+   the [program quickstart](../openplatform-ext-init/references/program-quickstart.md). Submission and key
+   registration alone do not establish a working program.
 
 Tell the developer what to send the moderator: the extensionId, the version, why each scope and each external domain
 is needed. More: `references/review-and-hosts.md`.
@@ -143,7 +163,7 @@ Full table with causes and fixes: `references/errors.md`. The ones people hit mo
 | Answer | Meaning | Do |
 |---|---|---|
 | 401 UNAUTHORIZED | key missing/invalid | new key, `npx @finamx/extension-sdk@latest login`, check the portal (`--api`) |
-| 404 NOT_FOUND on a new version | the extension exists but another account owns it | use the owner's token, ask moderators to transfer, or pick another id |
+| 404 NOT_FOUND on a new version | wrong portal, missing extension, or no write access in the selected Publisher | check the portal and ID, select the owning Publisher, and ask its owner/admin for a write role |
 | 409 EXTENSION_EXISTS | id taken | `finamx-ext publish` switches to a new version automatically if it is yours |
 | 409 VERSION_NOT_NEWER | version not higher than stored ones | bump semver |
 | 400 INVALID_MANIFEST | schema violation | read `details`, run `finamx-ext check` |

@@ -42,7 +42,7 @@ Widget:
 import { resolveAuthContext } from '@finamx/extension-sdk';
 
 const ctx = await resolveAuthContext(bridge, {
-  jwksUrl: 'https://openplatform.changesandbox.ru/.well-known/jwks.json', // the portal you submit to
+  jwksUrl: 'https://openplatform.changesandbox.ru/op/jwks', // the portal you submit to
   expectedAud: EXTENSION_ID,
   timeoutMs: 15000,
 });
@@ -60,7 +60,7 @@ Backend (Node):
 ```js
 import { verifyPlatformClaim } from '@finamx/extension-sdk';
 const claims = await verifyPlatformClaim(token, 'platform.auth_context.v1', 'com.acme.my-widget', {
-  jwksUrl: 'https://openplatform.changesandbox.ru/.well-known/jwks.json',
+  jwksUrl: 'https://openplatform.changesandbox.ru/op/jwks',
 });
 ```
 

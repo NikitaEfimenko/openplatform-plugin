@@ -4,8 +4,8 @@ Two profiles. Do not mix them up.
 
 | Profile | Token typ | Use | Verify with |
 |---------|-----------|-----|-------------|
-| host-only `platform.s2s.v1` | host or platform as caller, no user | public topics (no consent) | `verifyPlatformClaim` / `createS2sWebhookHandler()` default |
-| user-bound `platform.s2s.user.v1` | CMS-minted after the user's consent | private host data for one user | `verifyUserBoundS2s` / `createS2sWebhookHandler({ profile: 'user' })` |
+| host-only | `platform.s2s.v1` | host/platform caller, public topics without a user | `verifyPlatformClaim` / `createS2sWebhookHandler()` default |
+| user-bound | `platform.s2s.user.v1` | CMS-minted after consent, private host data for one user | `verifyUserBoundS2s` / `createS2sWebhookHandler({ profile: 'user' })` |
 
 The host-only verifier **refuses** user tokens and the user verifier refuses host tokens (`WRONG_PROFILE`). Never accept a user-bound token with the host-only verifier.
 
@@ -23,7 +23,7 @@ import { createS2sWebhookHandler } from '@finamx/extension-sdk';
 const handler = createS2sWebhookHandler({
   extensionId: 'com.acme.diary',
   profile: 'user',
-  jwksUrl: `${process.env.FINAMX_PLATFORM_API_BASE /* the portal, e.g. https://openplatform.changesandbox.ru */}/.well-known/jwks.json`,
+  jwksUrl: `${process.env.FINAMX_PLATFORM_API_BASE /* the portal, e.g. https://openplatform.changesandbox.ru */}/op/jwks`,
   onTopic: async (request, _claims, user) => {
     // user = { sub, scopes, host, ext }; check user.scopes before touching private data
   },
@@ -39,6 +39,12 @@ const handler = createS2sWebhookHandler({
 ## Pull client (your backend -> host data)
 
 Use this sequence for pull access and for Flow V2 completion. Explain each step before running it.
+
+Explain the three roles plainly: the developer key lets the CLI manage your extension; the private signing key
+stays on your backend and signs its requests; the matching public JWK is sent to the platform to verify those
+signatures. These are separate credentials. CMS keys from `/op/jwks` verify incoming platform tokens; they do not
+replace your backend's own key pair. You do not need to copy a public key into a moderator chat for initial setup:
+`register` sends it through the developer API. A moderator is still responsible for publication and live-key rotation.
 
 1. Log in with `finamx-ext login`; the developer enters the key in their terminal. Select the Publisher with
    `finamx-ext publishers use <id>` if needed. Never ask for keys in chat.

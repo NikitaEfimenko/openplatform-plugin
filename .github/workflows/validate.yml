@@ -20,7 +20,7 @@ jobs:
       - name: Published CLI and Flow V2 example
         run: |
           node scripts/check-cli.mjs
-          node --test scripts/check-flow-example.test.mjs
+          node --test scripts/check-flow-example.test.mjs scripts/check-s2s-cli.test.mjs
       - name: Claude Code marketplace and plugin validation
         run: |
           npx -y @anthropic-ai/claude-code plugin validate .
